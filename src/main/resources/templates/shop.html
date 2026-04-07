@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Sản phẩm | LEIKA LUXURY</title>
+</head>
+<body>
+<div th:fragment="content">
+    <section class="relative overflow-hidden bg-[#f6f0e8] py-16 md:py-24">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(201,169,110,0.25),_transparent_38%),radial-gradient(circle_at_bottom_left,_rgba(10,10,10,0.06),_transparent_30%)]"></div>
+        <div class="container relative mx-auto px-4 md:px-8">
+            <div class="grid items-end gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+                <div class="max-w-3xl">
+                    <p class="mb-4 text-[11px] font-semibold uppercase tracking-[0.35em] text-luxe-gold reveal"
+                       th:text="${shopHeroEyebrow ?: 'Modern Commerce Edit'}">Modern Commerce Edit</p>
+                    <h1 class="font-serif text-4xl leading-tight text-luxe-black md:text-6xl reveal" style="transition-delay:0.08s;"
+                        th:text="${shopHeroTitle ?: 'Sản phẩm dành cho nh�<p s�'ng sang trọng, rõ ràng và d�. mua.'}">Sản phẩm dành cho nh�<p s�'ng sang trọng, rõ ràng và d�. mua.</h1>
+                    <p class="mt-5 max-w-2xl text-sm leading-7 text-gray-600 reveal" style="transition-delay:0.14s;"
+                       th:text="${shopHeroDescription ?: 'Trang shop của LEIKA tập trung vào quyết �'�<nh mua hàng nhanh hơn: b�T lọc gọn �Y bên trái, quick view ngay trên ảnh và thao tác thêm vào giỏ ch�? trong m�Tt chạm.'}">Trang shop m�>i của LEIKA tập trung vào quyết �'�<nh mua hàng nhanh hơn: b�T lọc gọn �Y bên trái, quick view ngay trên ảnh và thao tác thêm vào giỏ ch�? trong m�Tt chạm.</p>
+                </div>
+                <div class="grid gap-4 text-sm text-luxe-black sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                    <div class="rounded-[1.75rem] border border-white/80 bg-white/80 p-5 shadow-[0_20px_60px_rgba(10,10,10,0.08)] backdrop-blur reveal" style="transition-delay:0.12s;">
+                        <p class="text-[10px] uppercase tracking-[0.25em] text-gray-400">Layout</p>
+                        <p class="mt-3 font-serif text-2xl">3-4 c�Tt</p>
+                    </div>
+                    <div class="rounded-[1.75rem] border border-white/80 bg-white/80 p-5 shadow-[0_20px_60px_rgba(10,10,10,0.08)] backdrop-blur reveal" style="transition-delay:0.18s;">
+                        <p class="text-[10px] uppercase tracking-[0.25em] text-gray-400">Utility</p>
+                        <p class="mt-3 font-serif text-2xl">Quick View</p>
+                    </div>
+                    <div class="rounded-[1.75rem] border border-white/80 bg-white/80 p-5 shadow-[0_20px_60px_rgba(10,10,10,0.08)] backdrop-blur reveal" style="transition-delay:0.24s;">
+                        <p class="text-[10px] uppercase tracking-[0.25em] text-gray-400">Action</p>
+                        <p class="mt-3 font-serif text-2xl">Quick Add</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-10 md:py-16">
+        <div id="shopPageApp" class="container mx-auto px-4 md:px-8"
+             th:attr="data-initial-category=${initialCategorySlug},data-initial-sort=${initialSort}">
+            <div class="grid gap-8 lg:grid-cols-[18rem_minmax(0,1fr)] xl:gap-10">
+                <aside class="lg:sticky lg:top-24 lg:self-start">
+                    <div class="overflow-hidden rounded-[2rem] border border-[#ebe3d8] bg-white shadow-[0_18px_55px_rgba(10,10,10,0.05)]">
+                        <div class="border-b border-[#f0e8de] px-6 py-5">
+                            <div class="flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="text-[10px] uppercase tracking-[0.3em] text-gray-400">Filters</p>
+                                    <h2 class="mt-2 font-serif text-2xl text-luxe-black">Chọn nhanh</h2>
+                                </div>
+                                <button @click="resetFilters" class="text-[11px] uppercase tracking-[0.2em] text-gray-400 transition hover:text-luxe-black">Reset</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-7 px-6 py-6">
+                            <div class="rounded-2xl bg-[#faf6f1] p-4">
+                                <label class="mb-3 block text-[10px] uppercase tracking-[0.3em] text-gray-400">Tìm kiếm</label>
+                                <div class="flex items-center gap-2 rounded-2xl border border-white bg-white px-4 py-3">
+                                    <i class="fa-solid fa-magnifying-glass text-xs text-gray-400"></i>
+                                    <input v-model="keyword" @keyup.enter="loadProducts" type="text" placeholder="Ví dụ: Blazer, Túi xách..." class="w-full border-0 bg-transparent text-sm text-luxe-black outline-none placeholder:text-gray-300">
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="mb-3 flex items-center justify-between">
+                                    <h3 class="text-[10px] font-semibold uppercase tracking-[0.3em] text-gray-400">Danh mục</h3>
+                                    <span class="text-xs text-gray-300">{{ categories.length }}</span>
+                                </div>
+                                <div class="space-y-2">
+                                    <button @click="filterCategory(null)" class="flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm transition" :class="selectedCategory === null ? 'bg-luxe-black text-white' : 'bg-[#faf6f1] text-luxe-black hover:bg-[#f2e8db]'">
+                                        <span>Tất cả sản phẩm</span>
+                                        <span class="text-xs opacity-70">All</span>
+                                    </button>
+                                    <template v-for="category in categories" :key="category.categoryId">
+                                        <button @click="filterCategory(category.categoryId)" class="flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm transition" :class="selectedCategory === category.categoryId ? 'bg-luxe-black text-white' : 'bg-[#faf6f1] text-luxe-black hover:bg-[#f2e8db]'">
+                                            <span>{{ category.categoryName }}</span>
+                                            <span class="text-xs opacity-70">{{ category.subCategories?.length || 0 }}</span>
+                                        </button>
+                                        <button v-for="subCategory in category.subCategories || []" :key="subCategory.categoryId" @click="filterCategory(subCategory.categoryId)" class="ml-3 flex w-[calc(100%-0.75rem)] items-center justify-between rounded-2xl px-4 py-3 text-left text-sm transition" :class="selectedCategory === subCategory.categoryId ? 'bg-[#d9c4a1] text-luxe-black' : 'bg-white text-gray-600 hover:bg-[#faf6f1]'">
+                                            <span>{{ subCategory.categoryName }}</span>
+                                            <span class="text-[10px] uppercase tracking-[0.2em]">Edit</span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="mb-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-gray-400">Thương hi�?u</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <button @click="filterBrand(null)" class="rounded-full px-4 py-2 text-xs uppercase tracking-[0.2em] transition" :class="selectedBrand === null ? 'bg-luxe-black text-white' : 'bg-[#faf6f1] text-luxe-black hover:bg-[#f2e8db]'">Tất cả</button>
+                                    <button v-for="brand in brands" :key="brand.brandId" @click="filterBrand(brand.brandId)" class="rounded-full px-4 py-2 text-xs uppercase tracking-[0.2em] transition" :class="selectedBrand === brand.brandId ? 'bg-luxe-black text-white' : 'bg-[#faf6f1] text-luxe-black hover:bg-[#f2e8db]'">{{ brand.brandName }}</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="mb-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-gray-400">Mức giá</h3>
+                                <div class="space-y-2 text-sm text-gray-600">
+                                    <button @click="filterPrice(null, null)" class="flex w-full items-center justify-between rounded-2xl px-4 py-3 transition" :class="minPrice === null && maxPrice === null ? 'bg-luxe-black text-white' : 'bg-[#faf6f1] hover:bg-[#f2e8db]'">
+                                        <span>Tất cả</span>
+                                        <span class="text-xs opacity-70">All</span>
+                                    </button>
+                                    <button @click="filterPrice(0, 700000)" class="flex w-full items-center justify-between rounded-2xl px-4 py-3 transition" :class="minPrice === 0 && maxPrice === 700000 ? 'bg-luxe-black text-white' : 'bg-[#faf6f1] hover:bg-[#f2e8db]'">
+                                        <span>Dư�>i 700.000�,�</span>
+                                        <span class="text-xs opacity-70">Entry</span>
+                                    </button>
+                                    <button @click="filterPrice(700000, 1400000)" class="flex w-full items-center justify-between rounded-2xl px-4 py-3 transition" :class="minPrice === 700000 && maxPrice === 1400000 ? 'bg-luxe-black text-white' : 'bg-[#faf6f1] hover:bg-[#f2e8db]'">
+                                        <span>700.000�,� - 1.400.000�,�</span>
+                                        <span class="text-xs opacity-70">Core</span>
+                                    </button>
+                                    <button @click="filterPrice(1400000, null)" class="flex w-full items-center justify-between rounded-2xl px-4 py-3 transition" :class="minPrice === 1400000 && maxPrice === null ? 'bg-luxe-black text-white' : 'bg-[#faf6f1] hover:bg-[#f2e8db]'">
+                                        <span>Trên 1.400.000�,�</span>
+                                        <span class="text-xs opacity-70">Premium</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <div>
+                    <div class="mb-6 flex flex-col gap-4 rounded-[2rem] border border-[#ebe3d8] bg-white px-5 py-5 shadow-[0_18px_55px_rgba(10,10,10,0.05)] md:flex-row md:items-center md:justify-between md:px-7">
+                        <div>
+                            <p class="text-[10px] uppercase tracking-[0.28em] text-gray-400">Live catalog</p>
+                            <h2 class="mt-2 font-serif text-2xl text-luxe-black">{{ totalElements }} thiết kế �'ang m�Y bán</h2>
+                            <p class="mt-2 text-sm text-gray-500">{{ activeFilterCount }} b�T lọc �'ang �'ược áp dụng �'�f giữ trải nghi�?m mua hàng tập trung hơn.</p>
+                        </div>
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <div class="rounded-full bg-[#faf6f1] px-4 py-2 text-xs uppercase tracking-[0.2em] text-gray-500">
+                                Trang {{ totalPages === 0 ? 0 : currentPage + 1 }}/{{ totalPages || 1 }}
+                            </div>
+                            <select v-model="sortBy" @change="loadProducts" class="rounded-full border border-[#e9dfd3] bg-white px-5 py-3 text-sm text-luxe-black outline-none transition focus:border-luxe-black">
+                                <option value="newest">M�>i nhất</option>
+                                <option value="bestseller">Bán chạy</option>
+                                <option value="price-asc">Giá t�fng dần</option>
+                                <option value="price-desc">Giá giảm dần</option>
+                                <option value="name-asc">Tên A �?' Z</option>
+                                <option value="sale">Đang sale</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div v-if="loading" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        <div v-for="skeleton in 8" :key="skeleton" class="overflow-hidden rounded-[2rem] border border-[#ebe3d8] bg-white p-4 shadow-[0_18px_55px_rgba(10,10,10,0.04)]">
+                            <div class="h-72 animate-pulse rounded-[1.5rem] bg-[#f5efe6]"></div>
+                            <div class="mt-4 h-3 w-20 animate-pulse rounded-full bg-[#f5efe6]"></div>
+                            <div class="mt-3 h-5 w-4/5 animate-pulse rounded-full bg-[#f5efe6]"></div>
+                            <div class="mt-3 h-4 w-2/5 animate-pulse rounded-full bg-[#f5efe6]"></div>
+                        </div>
+                    </div>
+
+                    <div v-else-if="products.length > 0" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        <article v-for="(p, index) in products" :key="p.productId + '-' + p.displayImageUrl" class="group overflow-hidden rounded-[2rem] border border-[#ebe3d8] bg-white p-4 shadow-[0_18px_55px_rgba(10,10,10,0.04)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_28px_80px_rgba(10,10,10,0.1)] reveal" :style="'transition-delay:' + ((index % 4) * 0.06) + 's;'">
+                            <div class="relative overflow-hidden rounded-[1.5rem] bg-[#f8f3ec]">
+                                <a :href="productHref(p)" class="block h-72 overflow-hidden sm:h-80">
+                                    <img :src="p.displayImageUrl" :alt="p.productName" class="h-full w-full object-cover transition duration-700 group-hover:scale-105" @error="$event.target.onerror=null; $event.target.src=resolveImage(p)">
+                                </a>
+                                <div class="absolute inset-x-4 top-4 flex items-start justify-between gap-3">
+                                    <span class="rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-luxe-black backdrop-blur">{{ p.brandName || 'LEIKA' }}</span>
+                                    <span v-if="hasDiscount(p)" class="rounded-full bg-[#8f1d1d] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-lg">-{{ p.discountPercent }}%</span>
+                                </div>
+                                <div class="pointer-events-none absolute inset-x-4 bottom-4 translate-y-4 opacity-0 transition duration-300 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
+                                    <div class="grid grid-cols-2 gap-2 rounded-[1.25rem] bg-white/90 p-2 backdrop-blur">
+                                        <button @click.prevent="openQuickView(p)" class="rounded-[1rem] border border-[#e8dece] px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-luxe-black transition hover:border-luxe-black">Quick View</button>
+                                        <button @click.prevent="quickAdd(p)" class="rounded-[1rem] bg-luxe-black px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white transition hover:bg-[#2e2e2e]">Add to Cart</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="px-1 pt-4">
+                                <p class="text-[10px] uppercase tracking-[0.25em] text-gray-400">{{ p.categoryName || 'Signature Edit' }}</p>
+                                <a :href="productHref(p)" class="mt-2 block">
+                                    <h3 class="font-serif text-xl leading-tight text-luxe-black transition group-hover:text-luxe-gold">{{ p.nameParts.primary }}</h3>
+                                    <p class="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">{{ p.nameParts.secondary }}</p>
+                                </a>
+                                <div class="mt-4 flex items-end justify-between gap-4">
+                                    <div>
+                                        <p class="text-lg font-semibold text-luxe-black">{{ getPrice(p) }}</p>
+                                        <p v-if="hasDiscount(p)" class="mt-1 text-sm text-gray-400 line-through">{{ getBasePrice(p) }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-[10px] uppercase tracking-[0.18em] text-gray-400">Stock</p>
+                                        <p class="mt-1 text-xs text-gray-500">{{ p.stockLabel }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div v-else class="rounded-[2rem] border border-dashed border-[#d8cbb9] bg-[#fbf7f2] px-6 py-14 text-center">
+                        <p class="text-[10px] uppercase tracking-[0.3em] text-gray-400">No match</p>
+                        <h3 class="mt-3 font-serif text-3xl text-luxe-black">Chưa có thiết kế phù hợp v�>i b�T lọc hi�?n tại.</h3>
+                        <p class="mx-auto mt-3 max-w-xl text-sm leading-7 text-gray-500">Hãy thử reset b�T lọc hoặc �'�.i từ khóa tìm kiếm �'�f m�Y r�Tng phạm vi xem các thiết kế �'ang bán.</p>
+                        <button @click="resetFilters" class="mt-6 rounded-full bg-luxe-black px-6 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-white transition hover:bg-[#2e2e2e]">Xem lại toàn b�T</button>
+                    </div>
+
+                    <div v-if="totalPages > 1" class="mt-8 flex flex-wrap items-center justify-center gap-2">
+                        <button @click="changePage(currentPage - 1)" :disabled="currentPage <= 0" class="h-11 min-w-11 rounded-full border border-[#eadfce] px-4 text-sm text-luxe-black transition hover:border-luxe-black disabled:cursor-not-allowed disabled:opacity-40">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <button v-for="page in visiblePages" :key="page" @click="changePage(page)" class="h-11 min-w-11 rounded-full px-4 text-sm transition" :class="page === currentPage ? 'bg-luxe-black text-white' : 'border border-[#eadfce] text-luxe-black hover:border-luxe-black'">
+                            {{ page + 1 }}
+                        </button>
+                        <button @click="changePage(currentPage + 1)" :disabled="currentPage >= totalPages - 1" class="h-11 min-w-11 rounded-full border border-[#eadfce] px-4 text-sm text-luxe-black transition hover:border-luxe-black disabled:cursor-not-allowed disabled:opacity-40">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <transition enter-active-class="transition duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="quickViewOpen" class="fixed inset-0 z-[70] bg-black/55 backdrop-blur-sm" @click.self="closeQuickView">
+                    <div class="flex min-h-full items-center justify-center p-4 md:p-8">
+                        <div class="relative w-full max-w-5xl overflow-hidden rounded-[2rem] bg-white shadow-[0_35px_120px_rgba(0,0,0,0.35)]">
+                            <button @click="closeQuickView" class="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-luxe-black shadow-lg transition hover:bg-luxe-black hover:text-white">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                            <div v-if="quickViewLoading" class="grid min-h-[32rem] place-items-center bg-[#faf6f1] px-6 py-20 text-center">
+                                <div>
+                                    <div class="mx-auto h-14 w-14 animate-spin rounded-full border-2 border-[#d9c4a1] border-t-luxe-black"></div>
+                                    <p class="mt-4 text-sm uppercase tracking-[0.24em] text-gray-400">Loading product</p>
+                                </div>
+                            </div>
+
+                            <div v-else-if="quickProduct" class="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
+                                <div class="bg-[#f8f2ea] p-5 md:p-8">
+                                    <div class="overflow-hidden rounded-[1.75rem] bg-white">
+                                        <img :src="quickProduct.displayImageUrl" :alt="quickProduct.productName" class="h-full min-h-[24rem] w-full object-cover md:min-h-[36rem]">
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col justify-between p-6 md:p-10">
+                                    <div>
+                                        <p class="text-[10px] uppercase tracking-[0.28em] text-gray-400">{{ quickProduct.brandName || 'LEIKA' }}</p>
+                                        <h3 class="mt-3 font-serif text-3xl leading-tight text-luxe-black md:text-4xl">{{ quickProduct.nameParts.primary }}</h3>
+                                        <p class="mt-2 text-xs uppercase tracking-[0.24em] text-luxe-gold">{{ quickProduct.nameParts.secondary }}</p>
+                                        <div class="mt-5 flex flex-wrap items-center gap-3">
+                                            <p class="text-2xl font-semibold text-luxe-black">{{ getPrice(quickProduct) }}</p>
+                                            <p v-if="hasDiscount(quickProduct)" class="text-base text-gray-400 line-through">{{ getBasePrice(quickProduct) }}</p>
+                                            <span v-if="hasDiscount(quickProduct)" class="rounded-full bg-[#8f1d1d] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white">-{{ quickProduct.discountPercent }}%</span>
+                                        </div>
+                                        <p class="mt-6 text-sm leading-7 text-gray-600">{{ quickProduct.description || 'Thiết kế �'ược chọn lọc cho tủ �'�" hi�?n �'ại, nhấn vào mua nhanh hoặc xem chi tiết �'�f khám phá �'ầy �'ủ.' }}</p>
+                                    </div>
+
+                                    <div class="mt-8 space-y-6">
+                                        <div v-if="quickProduct.variants && quickProduct.variants.length > 0">
+                                            <div class="mb-3 flex items-center justify-between">
+                                                <p class="text-[10px] uppercase tracking-[0.28em] text-gray-400">Variant</p>
+                                                <p v-if="selectedQuickVariant" class="text-xs text-gray-500">Kho: {{ selectedQuickVariant.stockQty }}</p>
+                                            </div>
+                                            <div class="flex flex-wrap gap-2">
+                                                <button v-for="variant in quickProduct.variants" :key="variant.variantId" @click="quickSelectedVariantId = variant.variantId" class="rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition" :class="quickSelectedVariantId === variant.variantId ? 'border-luxe-black bg-luxe-black text-white' : 'border-[#eadfce] text-luxe-black hover:border-luxe-black'">
+                                                    {{ variant.sku }}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                                            <div>
+                                                <p class="mb-3 text-[10px] uppercase tracking-[0.28em] text-gray-400">S�' lượng</p>
+                                                <div class="inline-flex items-center rounded-full border border-[#eadfce] p-1">
+                                                    <button @click="decrementQuickQuantity" class="flex h-11 w-11 items-center justify-center rounded-full text-luxe-black transition hover:bg-[#faf6f1]">-</button>
+                                                    <span class="min-w-12 text-center text-sm font-semibold text-luxe-black">{{ quickQuantity }}</span>
+                                                    <button @click="incrementQuickQuantity" class="flex h-11 w-11 items-center justify-center rounded-full text-luxe-black transition hover:bg-[#faf6f1]">+</button>
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-1 flex-col gap-3 sm:flex-row sm:justify-end">
+                                                <a :href="productHref(quickProduct)" class="rounded-full border border-luxe-black px-6 py-3 text-center text-xs font-semibold uppercase tracking-[0.24em] text-luxe-black transition hover:bg-luxe-black hover:text-white">Xem chi tiết</a>
+                                                <button @click="addQuickViewToCart" :disabled="!quickSelectedVariantId" class="rounded-full bg-luxe-black px-6 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:bg-[#2d2d2d] disabled:cursor-not-allowed disabled:opacity-50">Thêm vào giỏ</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </div>
+    </section>
+
+    <script th:src="@{/js/shop-page.js}"></script>
+</div>
+</body>
+</html>

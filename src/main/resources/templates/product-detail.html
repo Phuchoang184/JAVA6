@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Chi tiết sản phẩm | LEIKA LUXURY</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <!-- Breadcrumb -->
+    <div class="container mx-auto px-4 md:px-8 py-6">
+        <nav class="text-[10px] text-gray-400 tracking-[0.2em] uppercase flex items-center gap-2">
+            <a href="/" class="hover:text-luxe-black transition-colors duration-300">Trang chủ</a>
+            <span class="text-gray-300">/</span>
+            <a href="/shop" class="hover:text-luxe-black transition-colors duration-300">Sản phẩm</a>
+            <span class="text-gray-300">/</span>
+            <span class="text-luxe-black font-medium" id="breadcrumb-name">Đang tải...</span>
+        </nav>
+    </div>
+
+    <!-- Product Detail Section -->
+    <section class="py-10 reveal" id="productApp">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
+                
+                <!-- Product Images (Left) -->
+                <div class="w-full lg:w-1/2 flex flex-col md:flex-row-reverse gap-4">
+                    <!-- Main Image Sticky -->
+                    <div class="md:w-5/6 relative overflow-hidden bg-gray-50" style="height: 600px;">
+                        <img :src="mainImage" :alt="product ? product.productName : 'Sản phẩm'" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105 cursor-zoom-in" @error="$event.target.onerror=null; $event.target.src='https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80'">
+                    </div>
+                    
+                    <!-- Thumbnails -->
+                    <div class="md:w-1/6 flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto" style="max-height: 800px">
+                        <img v-for="(img, idx) in images" :key="idx" 
+                             :src="img" 
+                             @click="mainImage = img"
+                             :class="{'border-luxe-black ring-1 ring-luxe-black': mainImage === img, 'border-gray-200 hover:border-gray-400': mainImage !== img}"
+                             class="w-20 md:w-full h-28 md:h-32 object-cover cursor-pointer border-2 transition-all duration-300"
+                             alt="Thumbnail">
+                    </div>
+                </div>
+                
+                <!-- Product Info (Right) -->
+                <div class="w-full lg:w-1/2 sticky top-24 self-start">
+                    <div class="max-w-md">
+                        <div v-if="loadError" class="mb-6 rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {{ loadError }}
+                        </div>
+
+                        <h1 class="text-3xl md:text-4xl font-serif font-medium mb-2 tracking-wide">{{ product ? product.productName : 'Dang tai...' }}</h1>
+                        <p class="text-sm text-gray-400 tracking-[0.15em] uppercase mb-4" v-if="product">{{ productNameEN }}</p>
+
+                        <div class="mb-5 flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-gray-500" v-if="product">
+                            <span v-if="product.brandName">{{ product.brandName }}</span>
+                            <span v-if="product.categoryName" class="text-gray-300">/</span>
+                            <span v-if="product.categoryName">{{ product.categoryName }}</span>
+                            <span class="text-gray-300">/</span>
+                            <span :class="isOutOfStock ? 'text-red-600' : 'text-emerald-700'">{{ stockLabel }}</span>
+                        </div>
+                        
+                        <div class="flex items-end gap-3 mb-8" v-if="product">
+                            <span class="text-2xl font-semibold">{{ formatPrice(currentPrice) }}</span>
+                            <span v-if="compareAtPrice" class="text-lg text-gray-400 line-through pb-[2px]">{{ formatPrice(compareAtPrice) }}</span>
+                            <span v-if="discountPercent > 0" class="bg-luxe-black text-white px-2.5 py-1 text-[10px] font-bold mb-1 uppercase tracking-[0.15em]">-{{ discountPercent }}%</span>
+                        </div>
+
+                        <p class="-mt-5 mb-8 text-sm text-gray-500" v-if="selectedVariant && selectedVariant.extraPrice > 0">
+                            Phiên bản {{ selectedOptionLabel }} có phụ thu {{ formatPrice(selectedVariant.extraPrice) }}.
+                        </p>
+                        
+                        <p class="text-gray-600 font-light leading-relaxed mb-8" v-if="product">
+                            {{ product.description }}
+                        </p>
+                        
+                        <!-- Selectors -->
+                        <div class="mb-8 border-t border-b border-gray-100 py-6 space-y-6">
+                            <!-- Size (from variants) -->
+                            <div v-if="hasVariants">
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-sm font-medium tracking-wide uppercase">{{ optionLabel }}: {{ selectedOptionLabel || 'Vui lòng chọn' }}</span>
+                                    <a v-if="supportsSizeGuide" href="javascript:void(0)" @click="openSizeGuide" class="text-xs text-gray-500 underline hover:text-black">Hướng dẫn chọn size</a>
+                                </div>
+                                <div class="flex flex-wrap gap-3" v-if="product && product.variants">
+                                    <button v-for="variant in product.variants" :key="variant.variantId" 
+                                            @click="selectVariant(variant)"
+                                            :class="{'bg-black text-white border-black': selectedVariant && selectedVariant.variantId === variant.variantId, 'border-gray-300 text-black hover:border-black': !selectedVariant || selectedVariant.variantId !== variant.variantId, 'opacity-40 cursor-not-allowed': variant.stockQty === 0}"
+                                            :disabled="variant.stockQty === 0"
+                                            class="min-w-[56px] h-12 px-3 border flex items-center justify-center font-medium transition-colors text-sm">
+                                        {{ variant.displayLabel || variant.sku }}
+                                        <span v-if="variant.stockQty === 0" class="ml-1 text-[10px] text-red-400">(Hết)</span>
+                                    </button>
+                                </div>
+                                    <p class="text-sm" :class="isOutOfStock ? 'text-red-600' : 'text-gray-500'">
+                                    {{ stockLabel }}
+                                </p>
+                            </div>
+
+                            <div v-else class="text-sm text-red-600">
+                                Sản phẩm hiện chưa có phiên bản khả dụng.
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="mb-10">
+                            <div class="flex gap-4 mb-4">
+                                <!-- Quantity Slider -->
+                                <div class="w-32 border border-black flex">
+                                    <button @click="decrementQuantity" :disabled="quantity <= 1" class="w-10 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:cursor-not-allowed disabled:text-gray-300">-</button>
+                                    <input type="number" v-model.number="quantity" class="w-full text-center border-none focus:ring-0 text-sm font-medium p-0" readonly>
+                                    <button @click="incrementQuantity" :disabled="quantity >= maxPurchasableQty || isOutOfStock" class="w-10 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:cursor-not-allowed disabled:text-gray-300">+</button>
+                                </div>
+                                
+                                <!-- Add to Cart Button -->
+                                <button @click="addToCart" :disabled="addingToCart || isOutOfStock || !canSubmitCartAction" class="btn-ripple flex-grow bg-luxe-black text-white uppercase tracking-[0.2em] text-xs font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span v-if="addingToCart" class="inline-flex items-center gap-2">
+                                        <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                        Đang thêm...
+                                    </span>
+                                    <span v-else>{{ isOutOfStock ? 'Tạm hết hàng' : 'Thêm vào giỏ' }}</span>
+                                </button>
+                            </div>
+                            
+                            <!-- Checkout Right Away -->
+                            <button @click="buyNow" :disabled="addingToCart || isOutOfStock || !canSubmitCartAction" class="btn-ripple w-full bg-white text-black border border-black py-4 uppercase tracking-[0.2em] text-xs font-semibold hover:bg-luxe-black hover:text-white transition-all duration-400 disabled:opacity-50">
+                                Mua ngay
+                            </button>
+                        </div>
+                        
+                        <!-- Accordion Specs -->
+                        <div class="border-t border-gray-200">
+                            <!-- Tab: Chi tiết sản phẩm -->
+                            <div class="border-b border-gray-200">
+                                <div @click="toggleTab('details')" class="py-4 flex justify-between items-center cursor-pointer group">
+                                    <span class="font-medium text-sm tracking-wide uppercase">Chi tiết sản phẩm</span>
+                                    <i :class="activeTab === 'details' ? 'fa-solid fa-minus' : 'fa-solid fa-plus'" class="text-gray-400 group-hover:text-black transition-all"></i>
+                                </div>
+                                <div v-show="activeTab === 'details'" class="pb-4 text-sm text-gray-600 leading-relaxed space-y-2">
+                            <div class="flex gap-2" v-if="product && product.brandName"><span class="font-medium w-32 shrink-0">Thương hiệu:</span><span>{{ product.brandName }}</span></div>
+                                    <div class="flex gap-2" v-if="product && product.categoryName"><span class="font-medium w-32 shrink-0">Danh mục:</span><span>{{ product.categoryName }}</span></div>
+                                    <div class="flex gap-2" v-if="product"><span class="font-medium w-32 shrink-0">Mã sản phẩm:</span><span>#{{ product.productId }}</span></div>
+                                    <div class="flex gap-2" v-if="selectedVariant"><span class="font-medium w-32 shrink-0">SKU:</span><span>{{ selectedVariant.sku }}</span></div>
+                                    <div class="flex gap-2"><span class="font-medium w-32 shrink-0">Tình trạng:</span><span>{{ stockLabel }}</span></div>
+                                    <div class="flex gap-2" v-if="selectedVariant && selectedVariant.extraPrice > 0"><span class="font-medium w-32 shrink-0">Phụ thu:</span><span>{{ formatPrice(selectedVariant.extraPrice) }}</span></div>
+                                </div>
+                            </div>
+                            <!-- Tab: Chính sách giao hàng -->
+                            <div class="border-b border-gray-200">
+                                <div @click="toggleTab('shipping')" class="py-4 flex justify-between items-center cursor-pointer group">
+                                    <span class="font-medium text-sm tracking-wide uppercase">Chính sách giao hàng</span>
+                                    <i :class="activeTab === 'shipping' ? 'fa-solid fa-minus' : 'fa-solid fa-plus'" class="text-gray-400 group-hover:text-black transition-all"></i>
+                                </div>
+                                <div v-show="activeTab === 'shipping'" class="pb-4 text-sm text-gray-600 leading-relaxed space-y-2">
+                                    <p><i class="fa-solid fa-truck mr-2 text-gray-400"></i>Miễn phí giao hàng toàn quốc cho đơn hàng từ <strong>500.000₫</strong>.</p>
+                                    <p><i class="fa-regular fa-clock mr-2 text-gray-400"></i>Thời gian giao hàng từ <strong>2–4 ngày làm việc</strong> kể từ khi xác nhận đơn.</p>
+                                    <p><i class="fa-solid fa-location-dot mr-2 text-gray-400"></i>Hỗ trợ giao toàn quốc qua các đơn vị vận chuyển uy tín.</p>
+                                </div>
+                            </div>
+                            <!-- Tab: Chính sách đổi trả -->
+                            <div class="border-b border-gray-200">
+                                <div @click="toggleTab('return')" class="py-4 flex justify-between items-center cursor-pointer group">
+                                    <span class="font-medium text-sm tracking-wide uppercase">Chính sách đổi trả</span>
+                                    <i :class="activeTab === 'return' ? 'fa-solid fa-minus' : 'fa-solid fa-plus'" class="text-gray-400 group-hover:text-black transition-all"></i>
+                                </div>
+                                <div v-show="activeTab === 'return'" class="pb-4 text-sm text-gray-600 leading-relaxed space-y-2">
+                                    <p><i class="fa-solid fa-rotate-left mr-2 text-gray-400"></i>Hỗ trợ đổi size / mẫu trong vòng <strong>7 ngày</strong> kể từ khi nhận hàng.</p>
+                                    <p><i class="fa-solid fa-tag mr-2 text-gray-400"></i>Sản phẩm đổi trả phải còn nguyên tem mác, chưa qua sử dụng.</p>
+                                    <p><i class="fa-solid fa-envelope mr-2 text-gray-400"></i>Liên hệ hỗ trợ: <strong>support@leika.vn</strong> hoặc hotline <strong>1800 9999</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Size Guide Modal -->
+                        <div v-if="showSizeGuide" class="fixed inset-0 z-50 flex items-center justify-center">
+                            <div class="absolute inset-0 bg-black/60" @click="showSizeGuide = false"></div>
+                            <div class="relative bg-white w-full max-w-lg mx-4 p-8 shadow-2xl max-h-[80vh] overflow-y-auto">
+                                <button @click="showSizeGuide = false" class="absolute top-4 right-4 text-gray-400 hover:text-black transition-colors">
+                                    <i class="fa-solid fa-xmark text-xl"></i>
+                                </button>
+                                <h3 class="text-xl font-serif font-medium mb-6">{{ sizeGuideTitle }}</h3>
+                                <table class="w-full text-sm border-collapse">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th v-for="column in sizeGuideColumns" :key="column.key" class="border border-gray-200 px-4 py-2 text-center font-semibold" :class="column.align === 'left' ? 'text-left' : 'text-center'">{{ column.label }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="row in sizeChart" :key="row.size" class="hover:bg-gray-50">
+                                                    <td v-for="column in sizeGuideColumns" :key="column.key" class="border border-gray-200 px-4 py-2" :class="column.align === 'left' ? 'text-left' : 'text-center'">{{ row[column.key] }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                        <p class="mt-4 text-xs text-gray-400">{{ sizeGuideNote }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- REVIEWS & RATINGS SECTION                    -->
+        <!-- ============================================ -->
+        <div class="container mx-auto px-4 md:px-8 mt-16 mb-20">
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- Section Header -->
+                <div class="flex items-center justify-between mb-10 border-b border-gray-200 pb-6">
+                    <div>
+                        <h2 class="text-2xl font-serif font-medium">Đánh giá sản phẩm</h2>
+                        <div class="flex items-center gap-3 mt-2" v-if="reviewSummary">
+                            <div class="flex items-center gap-1">
+                                <i v-for="star in 5" :key="'avg-'+star"
+                                   :class="star <= Math.round(reviewSummary.averageRating) ? 'fa-solid fa-star text-yellow-400' : 'fa-regular fa-star text-gray-300'"
+                                   class="text-sm"></i>
+                            </div>
+                            <span class="text-lg font-semibold">{{reviewSummary.averageRating}}</span>
+                            <span class="text-gray-400 text-sm">({{reviewSummary.totalReviews}} đánh giá)</span>
+                        </div>
+                    </div>
+                    <button v-if="canReview" @click="showReviewForm = !showReviewForm"
+                            class="px-6 py-3 bg-black text-white text-sm uppercase tracking-widest font-semibold hover:bg-gray-800 transition-colors">
+                        Viết đánh giá
+                    </button>
+                </div>
+
+                <!-- Login prompt for unauthenticated users -->
+                <div v-if="!isLoggedIn" class="bg-gray-50 border border-gray-200 p-6 mb-8 text-center">
+                    <p class="text-gray-600 mb-3">Đăng nhập để viết đánh giá sản phẩm</p>
+                    <a href="/login" class="inline-block px-6 py-2 bg-black text-white text-sm uppercase tracking-widest font-semibold hover:bg-gray-800 transition-colors">
+                        Đăng nhập
+                    </a>
+                </div>
+
+                <!-- Write review form inline (shown when logged in and not yet reviewed) -->
+                <div v-if="isLoggedIn && canReview && !showReviewForm" class="bg-gray-50 border border-gray-200 p-6 mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-sm">Bạn đã mua sản phẩm này? Hãy chia sẻ cảm nhận!</p>
+                            <p class="text-xs text-gray-400 mt-1">Đánh giá của bạn giúp ích cho nhiều khách hàng khác.</p>
+                        </div>
+                        <button @click="showReviewForm = true"
+                                class="ml-4 shrink-0 px-5 py-2.5 bg-black text-white text-xs uppercase tracking-widest font-semibold hover:bg-gray-800 transition-colors">
+                            Viết đánh giá
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Already reviewed message -->
+                <div v-if="isLoggedIn && hasReviewed && !canReview" class="bg-green-50 border border-green-200 p-4 mb-8 text-center">
+                    <p class="text-green-700 text-sm"><i class="fa-solid fa-check-circle mr-1"></i> Bạn đã đánh giá sản phẩm này rồi</p>
+                </div>
+
+                <!-- Review Form -->
+                <div v-if="showReviewForm && canReview" class="bg-gray-50 border border-gray-200 p-8 mb-10 transition-all">
+                    <h3 class="text-lg font-medium mb-6">Đánh giá của bạn</h3>
+                    
+                    <!-- Star Rating -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium tracking-wide uppercase mb-3">Chất lượng sản phẩm</label>
+                        <div class="flex gap-2">
+                            <button v-for="star in 5" :key="'rate-'+star" @click="reviewForm.rating = star"
+                                    class="text-2xl transition-colors focus:outline-none"
+                                    :class="star <= reviewForm.rating ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'">
+                                <i class="fa-solid fa-star"></i>
+                            </button>
+                            <span class="ml-2 text-sm text-gray-500 self-center" v-if="reviewForm.rating">
+                                {{['', 'Rất tệ', 'Tệ', 'Bình thường', 'Tốt', 'Tuyệt vời'][reviewForm.rating]}}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium tracking-wide uppercase mb-2">Tiêu đề</label>
+                        <input v-model="reviewForm.title" type="text" maxlength="200"
+                               placeholder="Tóm tắt đánh giá của bạn..."
+                               class="w-full border border-gray-300 px-4 py-3 text-sm focus:border-black focus:ring-0 outline-none transition-colors">
+                    </div>
+
+                    <!-- Body -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium tracking-wide uppercase mb-2">Nội dung</label>
+                        <textarea v-model="reviewForm.body" rows="4" maxlength="2000"
+                                  placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."
+                                  class="w-full border border-gray-300 px-4 py-3 text-sm focus:border-black focus:ring-0 outline-none transition-colors resize-none"></textarea>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="flex gap-3">
+                        <button @click="submitReview" :disabled="submittingReview || !reviewForm.rating"
+                                class="px-8 py-3 bg-black text-white text-sm uppercase tracking-widest font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span v-if="submittingReview" class="inline-flex items-center gap-2">
+                                <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                Đang gửi...
+                            </span>
+                            <span v-else>Gửi đánh giá</span>
+                        </button>
+                        <button @click="showReviewForm = false"
+                                class="px-6 py-3 border border-gray-300 text-sm uppercase tracking-widest font-semibold hover:border-black transition-colors">
+                            Hủy
+                        </button>
+                    </div>
+                    <p v-if="reviewError" class="mt-3 text-red-600 text-sm">{{reviewError}}</p>
+                </div>
+
+                <!-- Reviews List -->
+                <div v-if="reviewSummary && reviewSummary.reviews.length > 0">
+                    <div v-for="review in reviewSummary.reviews" :key="review.reviewId" 
+                         class="border-b border-gray-100 py-6 last:border-b-0">
+                        <div class="flex items-start gap-4">
+                            <!-- Avatar -->
+                            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                <img v-if="review.userAvatarUrl" :src="review.userAvatarUrl" class="w-full h-full object-cover" alt="">
+                                <i v-else class="fa-solid fa-user text-gray-400 text-sm"></i>
+                            </div>
+                            
+                            <!-- Content -->
+                            <div class="flex-grow">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="font-medium text-sm">{{review.userFullName}}</span>
+                                    <span class="text-xs text-gray-400">{{formatDate(review.createdAt)}}</span>
+                                </div>
+                                <div class="flex items-center gap-1 mb-2">
+                                    <i v-for="star in 5" :key="'r-'+review.reviewId+'-'+star"
+                                       :class="star <= review.rating ? 'fa-solid fa-star text-yellow-400' : 'fa-regular fa-star text-gray-300'"
+                                       class="text-xs"></i>
+                                </div>
+                                <p v-if="review.title" class="font-medium text-sm mb-1">{{review.title}}</p>
+                                <p v-if="review.body" class="text-gray-600 text-sm leading-relaxed">{{review.body}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div v-else-if="reviewSummary && reviewSummary.reviews.length === 0" class="text-center py-12">
+                    <i class="fa-regular fa-star text-4xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500">Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<script>
+    if(typeof Vue !== 'undefined') {
+        const productApp = Vue.createApp({
+            data() {
+                return {
+                    product: null,
+                    mainImage: '',
+                    images: [],
+                    selectedVariant: null,
+                    quantity: 1,
+                    loading: true,
+                    loadError: '',
+                    addingToCart: false,
+                    // Accordion
+                    activeTab: null,
+                    // Size guide modal
+                    showSizeGuide: false,
+                    // Reviews
+                    reviewSummary: null,
+                    showReviewForm: false,
+                    submittingReview: false,
+                    hasReviewed: false,
+                    isLoggedIn: false,
+                    reviewError: '',
+                    reviewForm: {
+                        rating: 0,
+                        title: '',
+                        body: ''
+                    }
+                }
+            },
+            computed: {
+                canReview() {
+                    return this.isLoggedIn && !this.hasReviewed;
+                },
+                hasVariants() {
+                    return Array.isArray(this.product?.variants) && this.product.variants.length > 0;
+                },
+                activeBasePrice() {
+                    if (!this.product) return 0;
+                    return this.product.salePrice || this.product.basePrice || 0;
+                },
+                compareAtPrice() {
+                    if (!this.product || !this.product.salePrice || !this.product.basePrice || this.product.salePrice >= this.product.basePrice) {
+                        return null;
+                    }
+                    return this.toNumber(this.product.basePrice) + this.selectedExtraPrice;
+                },
+                currentPrice() {
+                    return this.toNumber(this.activeBasePrice) + this.selectedExtraPrice;
+                },
+                selectedExtraPrice() {
+                    return this.toNumber(this.selectedVariant?.extraPrice);
+                },
+                selectedOptionLabel() {
+                    return this.selectedVariant?.displayLabel || this.selectedVariant?.sku || '';
+                },
+                maxPurchasableQty() {
+                    if (this.selectedVariant) {
+                        return Math.max(this.selectedVariant.stockQty || 0, 0);
+                    }
+                    return Math.max(this.product?.totalStockQty || 0, 0);
+                },
+                isOutOfStock() {
+                    return this.maxPurchasableQty <= 0;
+                },
+                stockLabel() {
+                    const qty = this.maxPurchasableQty;
+                    if (qty <= 0) return 'Tạm hết hàng';
+                    if (qty <= 5) return 'Chỉ còn ' + qty + ' sản phẩm';
+                    return 'Sản phẩm sẵn hàng';
+                },
+                canSubmitCartAction() {
+                    return !!this.product && this.hasVariants;
+                },
+                supportsSizeGuide() {
+                    return this.isFashionCategory || this.isFootwearCategory;
+                },
+                isFootwearCategory() {
+                    return this.matchesCategory(['giay', 'dep']);
+                },
+                isFashionCategory() {
+                    return this.matchesCategory(['ao', 'vay', 'dam', 'quan', 'chan vay', 'blazer']);
+                },
+                optionLabel() {
+                    if (this.isFootwearCategory) return 'Kích cỡ';
+                    if (this.isFashionCategory) return 'Size';
+                    return 'Phiên bản';
+                },
+                productNameEN() {
+                    if (!this.product) return '';
+                    // Derive English name: use slug words capitalised, or fall back to category/brand
+                    const slug = this.product.slug || '';
+                    const englishGuess = slug
+                        .split('-')
+                        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(' ');
+                    return englishGuess || this.product.categoryName || this.product.brandName || '';
+                },
+                discountPercent() {
+                    if (this.product && this.product.salePrice && this.product.basePrice && this.product.basePrice > 0) {
+                        return Math.round((this.product.basePrice - this.product.salePrice) / this.product.basePrice * 100);
+                    }
+                    return 0;
+                },
+                sizeGuideColumns() {
+                    if (this.isFootwearCategory) {
+                        return [
+                            { key: 'size', label: 'Size', align: 'center' },
+                            { key: 'footLength', label: 'Chieu dai chan (cm)', align: 'center' },
+                            { key: 'fit', label: 'Phom', align: 'left' }
+                        ];
+                    }
+                    return [
+                        { key: 'size', label: 'Size', align: 'center' },
+                        { key: 'bust', label: 'Nguc (cm)', align: 'center' },
+                        { key: 'waist', label: 'Eo (cm)', align: 'center' },
+                        { key: 'hip', label: 'Hong (cm)', align: 'center' }
+                    ];
+                },
+                sizeChart() {
+                    if (this.isFootwearCategory) {
+                        return [
+                            { size: '36', footLength: '22.5', fit: 'Chan thon' },
+                            { size: '37', footLength: '23.0', fit: 'Chan vua' },
+                            { size: '38', footLength: '23.5', fit: 'Chan vua rong' },
+                            { size: '39', footLength: '24.0', fit: 'Chan rong' },
+                            { size: '40', footLength: '24.5', fit: 'Chan rong' },
+                            { size: '41', footLength: '25.0', fit: 'Chan dai' },
+                            { size: '42', footLength: '25.5', fit: 'Chan dai rong' },
+                            { size: '43', footLength: '26.0', fit: 'Chan dai rong' }
+                        ];
+                    }
+                    return [
+                        { size: 'XS', bust: '76-80', waist: '60-64', hip: '84-88' },
+                        { size: 'S', bust: '81-85', waist: '65-69', hip: '89-93' },
+                        { size: 'M', bust: '86-90', waist: '70-74', hip: '94-98' },
+                        { size: 'L', bust: '91-96', waist: '75-80', hip: '99-104' },
+                        { size: 'XL', bust: '97-102', waist: '81-86', hip: '105-110' }
+                    ];
+                },
+                sizeGuideTitle() {
+                    return this.isFootwearCategory ? 'Bảng chọn size giày' : 'Hướng dẫn chọn size';
+                },
+                sizeGuideNote() {
+                    return this.isFootwearCategory
+                        ? '* Nếu bạn nằm giữa hai size, ưu tiên size lớn hơn để đeo thoải mái hơn.'
+                        : '* Số đo trên là số đo cơ thể. Nếu bạn nằm giữa 2 size, hãy chọn size lớn hơn.';
+                }
+            },
+            async mounted() {
+                const checkAuth = () => {
+                    // AuthManager may not be loaded yet (api.js loads after page script),
+                    // so fall back to reading the token from localStorage directly.
+                    if (window.AuthManager) {
+                        this.isLoggedIn = window.AuthManager.isAuthenticated();
+                    } else {
+                        this.isLoggedIn = !!localStorage.getItem('leika_token');
+                    }
+                };
+                checkAuth();
+                window.addEventListener('auth:changed', checkAuth);
+                await this.loadProduct();
+            },
+            methods: {
+                async loadProduct() {
+                    // Extract product ID from URL: /products/{id}
+                    const pathParts = window.location.pathname.split('/');
+                    const productId = pathParts[pathParts.length - 1];
+                    if (!productId) { this.loading = false; return; }
+                    try {
+                        const { data: resp } = await axios.get(`/api/products/${productId}`);
+                        this.product = resp.data;
+                        this.loadError = '';
+                        // Update breadcrumb and page title
+                        const breadcrumb = document.getElementById('breadcrumb-name');
+                        if (breadcrumb) breadcrumb.textContent = this.product.productName;
+                        document.title = this.product.productName + ' | LEIKA LUXURY';
+                        // Set images
+                        const thumb = this.product.displayImageUrl || this.product.thumbnailUrl || 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80';
+                        this.mainImage = thumb;
+                        this.images = [thumb];
+                        // Add variant images
+                        if (this.product.variants) {
+                            this.product.variants.forEach(v => {
+                                if (v.imageUrl && !this.images.includes(v.imageUrl)) {
+                                    this.images.push(v.imageUrl);
+                                }
+                            });
+                        }
+                        this.selectedVariant = this.product.variants?.find(variant => variant.stockQty > 0) || this.product.variants?.[0] || null;
+                        this.quantity = this.isOutOfStock ? 0 : 1;
+                        this.activeTab = 'details';
+                    } catch (err) {
+                        console.error('Failed to load product', err);
+                        this.loadError = err.response?.data?.message || 'Không thể tải chi tiết sản phẩm vào lúc này.';
+                    } finally {
+                        this.loading = false;
+                    }
+                    // Load reviews after product
+                    if (productId) {
+                        await this.loadReviews(productId);
+                    }
+                },
+
+                toggleTab(tab) {
+                    this.activeTab = this.activeTab === tab ? null : tab;
+                },
+
+                openSizeGuide() {
+                    this.showSizeGuide = true;
+                },
+
+                selectVariant(variant) {
+                    this.selectedVariant = variant;
+                    this.quantity = variant.stockQty > 0 ? 1 : 0;
+                    if (variant.imageUrl) {
+                        this.mainImage = variant.imageUrl;
+                    }
+                },
+
+                incrementQuantity() {
+                    if (this.quantity < this.maxPurchasableQty) {
+                        this.quantity += 1;
+                    }
+                },
+
+                decrementQuantity() {
+                    if (this.quantity > 1) {
+                        this.quantity -= 1;
+                    }
+                },
+
+                async addToCart() {
+                    if (!this.product || !this.product.variants || this.product.variants.length === 0) {
+                        alert('Sản phẩm không có phiên bản nào!');
+                        return false;
+                    }
+                    // Auto-select first variant if only one
+                    if (!this.selectedVariant) {
+                        if (this.product.variants.length === 1) {
+                            this.selectedVariant = this.product.variants[0];
+                        } else {
+                            alert('Vui lòng chọn size bạn nhé!');
+                            return false;
+                        }
+                    }
+                    if (this.selectedVariant.stockQty <= 0) {
+                        alert('Phiên bản đã chọn hiện đang hết hàng.');
+                        return false;
+                    }
+                    if (this.quantity < 1 || this.quantity > this.selectedVariant.stockQty) {
+                        alert('Số lượng không hợp lệ với tồn kho hiện tại.');
+                        return false;
+                    }
+                    if (!window.cartApp) {
+                        return false;
+                    }
+
+                    this.addingToCart = true;
+                    try {
+                        await window.cartApp.addToCart(this.selectedVariant.variantId, this.quantity);
+                        return true;
+                    } finally {
+                        this.addingToCart = false;
+                    }
+                },
+
+                async buyNow() {
+                    const added = await this.addToCart();
+                    if (added) {
+                        window.location.href = '/cart';
+                    }
+                },
+
+                // ── Reviews ─────────────────────────────────
+                async loadReviews(productId) {
+                    try {
+                        const { data: resp } = await axios.get(`/api/reviews/product/${productId}`);
+                        this.reviewSummary = resp.data;
+                    } catch (err) {
+                        console.error('Failed to load reviews', err);
+                    }
+                    // Check if user already reviewed
+                    if (this.isLoggedIn && window.LeikaAPI) {
+                        try {
+                            const { data: resp } = await window.LeikaAPI.get(`/reviews/check/${productId}`);
+                            this.hasReviewed = resp.data;
+                        } catch (err) {
+                            // 401/403 means not authenticated – ignore
+                        }
+                    }
+                },
+
+                async submitReview() {
+                    if (!this.reviewForm.rating || this.reviewForm.rating < 1) {
+                        this.reviewError = 'Vui lòng chọn số sao đánh giá';
+                        return;
+                    }
+                    this.submittingReview = true;
+                    this.reviewError = '';
+                    try {
+                        await window.LeikaAPI.post('/reviews', {
+                            productId: this.product.productId,
+                            rating: this.reviewForm.rating,
+                            title: this.reviewForm.title,
+                            body: this.reviewForm.body
+                        });
+                        // Refresh reviews
+                        await this.loadReviews(this.product.productId);
+                        this.hasReviewed = true;
+                        this.showReviewForm = false;
+                        this.reviewForm = { rating: 0, title: '', body: '' };
+                    } catch (err) {
+                        const msg = err.response?.data?.message || 'Không thể gửi đánh giá';
+                        this.reviewError = msg;
+                    } finally {
+                        this.submittingReview = false;
+                    }
+                },
+
+                formatDate(dateStr) {
+                    if (!dateStr) return '';
+                    const d = new Date(dateStr);
+                    return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                },
+
+                formatPrice(val) {
+                    if (!val) return '0₫';
+                    return new Intl.NumberFormat('vi-VN').format(val) + '₫';
+                },
+
+                toNumber(value) {
+                    return Number(value || 0);
+                },
+
+                matchesCategory(candidates) {
+                    const category = (this.product?.categoryName || '').toLowerCase();
+                    return candidates.some(candidate => category.includes(candidate));
+                }
+            }
+        });
+        productApp.mount('#productApp');
+    }
+</script>
+
+</div>
+</body>
+</html>

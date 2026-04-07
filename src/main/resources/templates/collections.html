@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Bộ sưu tập | LEIKA LUXURY</title>
+</head>
+<body>
+<div th:fragment="content">
+    <section class="relative overflow-hidden bg-luxe-black py-16 text-white md:py-24">
+        <div class="absolute inset-0 opacity-40" style="background-image:radial-gradient(circle at top left, rgba(201,169,110,0.38), transparent 30%), radial-gradient(circle at bottom right, rgba(255,255,255,0.12), transparent 26%);"></div>
+        <div class="container relative mx-auto px-4 md:px-8">
+            <div class="grid gap-10 lg:grid-cols-[1fr_24rem] lg:items-end">
+                <div class="max-w-4xl">
+                    <p class="mb-4 text-[11px] font-semibold uppercase tracking-[0.35em] text-luxe-gold reveal">Editorial Collections</p>
+                    <h1 class="font-serif text-4xl leading-tight md:text-6xl reveal" style="transition-delay:0.08s;">Bộ sưu tập LEIKA không bắt đầu từ sản phẩm, mà bắt đầu từ một tâm trạng.</h1>
+                    <p class="mt-6 max-w-3xl text-sm leading-7 text-white/75 reveal" style="transition-delay:0.16s;">
+                        Thay vì liệt kê sản phẩm đơn lẻ, trang này mở ra bằng những cảnh quan thị giác lớn, nhiều khoảng thở và chất editorial. Mỗi collection có câu chuyện riêng, khi nhấn vào mới lộ ra các thiết kế bên trong.
+                    </p>
+                </div>
+                <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur reveal" style="transition-delay:0.22s;">
+                    <p class="text-[10px] uppercase tracking-[0.3em] text-white/40">Art Direction</p>
+                    <div class="mt-4 grid gap-4 text-sm text-white/80">
+                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-4">Masonry layout bất đối xứng để tạo nhịp thị giác.</div>
+                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-4">Storytelling text đi cùng banner để làm rõ “gu” LEIKA.</div>
+                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-4">Hover zoom trên ảnh để giữ cảm giác editorial cao cấp.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-10 md:py-16">
+        <div id="collectionsPageApp" class="container mx-auto px-4 md:px-8">
+            <div class="columns-1 gap-6 md:columns-2 xl:columns-3">
+                <article v-for="(collection, index) in collections" :key="collection.key" class="group mb-6 overflow-hidden rounded-[2rem] border border-[#ebe3d8] bg-white shadow-[0_20px_60px_rgba(10,10,10,0.06)]" style="break-inside:avoid;">
+                    <button @click="selectCollection(collection)" class="block w-full text-left">
+                        <div class="relative overflow-hidden" :style="cardHeight(collection, index)">
+                            <img :src="collection.image" :alt="collection.title" class="h-full w-full object-cover transition duration-[1200ms] group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent"></div>
+                            <div class="absolute inset-x-6 bottom-6 text-white">
+                                <p class="text-[10px] uppercase tracking-[0.3em] text-luxe-gold">{{ collection.eyebrow }}</p>
+                                <h2 class="mt-3 font-serif text-3xl leading-tight md:text-4xl">{{ collection.title }}</h2>
+                                <p class="mt-2 text-xs uppercase tracking-[0.22em] text-white/70">{{ collection.subtitle }}</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4 px-6 py-6">
+                            <p class="text-sm leading-7 text-gray-600">{{ collection.story }}</p>
+                            <div class="flex items-center justify-between gap-4 border-t border-[#f2eadf] pt-4">
+                                <p class="text-[10px] uppercase tracking-[0.25em] text-gray-400">{{ collection.note }}</p>
+                                <span class="inline-flex items-center gap-2 rounded-full border border-[#eadfce] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-luxe-black transition group-hover:border-luxe-black group-hover:bg-luxe-black group-hover:text-white">
+                                    Mở collection <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </button>
+                </article>
+            </div>
+
+            <section class="mt-12 overflow-hidden rounded-[2.2rem] border border-[#ebe3d8] bg-[#fbf7f2] shadow-[0_20px_60px_rgba(10,10,10,0.06)]">
+                <div class="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
+                    <div class="relative min-h-[22rem] overflow-hidden bg-luxe-black">
+                        <img v-if="activeCollection" :src="activeCollection.image" :alt="activeCollection.title" class="absolute inset-0 h-full w-full object-cover opacity-75">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                        <div class="relative flex h-full flex-col justify-end p-6 text-white md:p-10">
+                            <p class="text-[10px] uppercase tracking-[0.32em] text-luxe-gold">Selected Story</p>
+                            <h3 class="mt-4 font-serif text-3xl md:text-5xl">{{ activeCollection?.title }}</h3>
+                            <p class="mt-2 text-xs uppercase tracking-[0.24em] text-white/65">{{ activeCollection?.subtitle }}</p>
+                            <p class="mt-5 max-w-xl text-sm leading-7 text-white/78">{{ activeCollection?.story }}</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-8 md:px-10 md:py-10">
+                        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                            <div>
+                                <p class="text-[10px] uppercase tracking-[0.3em] text-gray-400">Collection pieces</p>
+                                <h3 class="mt-3 font-serif text-3xl text-luxe-black">Các thiết kế thuộc collection này</h3>
+                            </div>
+                            <p class="text-sm text-gray-500">{{ activeProducts.length }} sản phẩm được chọn theo mood và category của bộ sưu tập.</p>
+                        </div>
+
+                        <div v-if="loading" class="mt-8 space-y-4">
+                            <div v-for="skeleton in 3" :key="skeleton" class="h-24 animate-pulse rounded-[1.5rem] bg-white"></div>
+                        </div>
+
+                        <div v-else-if="activeProducts.length > 0" class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                            <article v-for="product in activeProducts" :key="product.productId" class="group rounded-[1.6rem] border border-white bg-white p-4 shadow-[0_12px_38px_rgba(10,10,10,0.06)] transition duration-300 hover:-translate-y-1">
+                                <a :href="productHref(product)" class="block overflow-hidden rounded-[1.2rem] bg-[#f5eee4]">
+                                    <img :src="product.displayImageUrl" :alt="product.productName" class="h-56 w-full object-cover transition duration-700 group-hover:scale-105">
+                                </a>
+                                <div class="pt-4">
+                                    <p class="text-[10px] uppercase tracking-[0.24em] text-gray-400">{{ product.categoryName || 'LEIKA Edit' }}</p>
+                                    <a :href="productHref(product)" class="mt-2 block">
+                                        <h4 class="font-serif text-xl leading-tight text-luxe-black">{{ product.nameParts.primary }}</h4>
+                                        <p class="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">{{ product.nameParts.secondary }}</p>
+                                    </a>
+                                    <div class="mt-4 flex items-center justify-between gap-3">
+                                        <p class="text-base font-semibold text-luxe-black">{{ formatPrice(product.salePrice || product.basePrice) }}</p>
+                                        <a :href="productHref(product)" class="text-[11px] font-semibold uppercase tracking-[0.22em] text-luxe-gold transition hover:text-luxe-black">Xem sản phẩm</a>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+
+                        <div v-else class="mt-8 rounded-[1.75rem] border border-dashed border-[#d8cbb9] bg-white px-6 py-12 text-center">
+                            <p class="text-[10px] uppercase tracking-[0.3em] text-gray-400">Curating</p>
+                            <h4 class="mt-3 font-serif text-3xl text-luxe-black">Collection này đang được bổ sung thêm thiết kế.</h4>
+                            <p class="mx-auto mt-3 max-w-lg text-sm leading-7 text-gray-500">Giữ nguyên phần visual storytelling ở phía trên để trang vẫn có chiều sâu hình ảnh, ngay cả khi dữ liệu sản phẩm đang được cập nhật.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <script th:src="@{/js/collections-page.js}"></script>
+</div>
+</body>
+</html>

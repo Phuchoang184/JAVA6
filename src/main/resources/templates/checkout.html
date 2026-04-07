@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Thanh toán | LEIKA LUXURY</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <style>
+        .checkout-shell {
+            background:
+                radial-gradient(circle at top left, rgba(201, 169, 110, 0.18), transparent 28%),
+                linear-gradient(180deg, #fbf8f3 0%, #f5f0e8 100%);
+        }
+
+        .checkout-card {
+            border: 1px solid rgba(15, 15, 15, 0.06);
+            border-radius: 28px;
+            box-shadow: 0 20px 70px rgba(17, 17, 17, 0.08);
+            overflow: hidden;
+        }
+
+        .checkout-section-title {
+            font-size: 0.78rem;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: #7b7b7b;
+        }
+
+        .checkout-field,
+        .checkout-select,
+        .checkout-textarea {
+            width: 100%;
+            border: 1px solid #ddd4c5;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 16px;
+            padding: 0.95rem 1rem;
+            font-size: 0.95rem;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background-color 0.25s ease;
+            color: #111;
+        }
+
+        .checkout-field::placeholder,
+        .checkout-textarea::placeholder {
+            color: #9a9489;
+        }
+
+        .checkout-field:focus,
+        .checkout-select:focus,
+        .checkout-textarea:focus {
+            outline: none;
+            border-color: #c9a96e;
+            box-shadow: 0 0 0 4px rgba(201, 169, 110, 0.18);
+            background: #fff;
+        }
+
+        .checkout-field.is-invalid,
+        .checkout-select.is-invalid,
+        .checkout-textarea.is-invalid {
+            border-color: #c62828;
+            box-shadow: 0 0 0 4px rgba(198, 40, 40, 0.08);
+        }
+
+        .field-shake {
+            animation: checkout-shake 0.36s ease-in-out;
+        }
+
+        @keyframes checkout-shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        .payment-option {
+            border: 1px solid rgba(17, 17, 17, 0.1);
+            border-radius: 20px;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background-color 0.25s ease;
+        }
+
+        .payment-option.active {
+            border-color: #111;
+            background: linear-gradient(135deg, rgba(201, 169, 110, 0.08), rgba(255, 255, 255, 0.96));
+            box-shadow: 0 18px 35px rgba(17, 17, 17, 0.07);
+            transform: translateY(-1px);
+        }
+
+        .summary-row-muted {
+            color: #7b7b7b;
+        }
+
+        .coupon-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            padding: 0.4rem 0.75rem;
+            background: rgba(201, 169, 110, 0.14);
+            color: #8d6a33;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+    </style>
+
+    <section class="py-16 min-h-[80vh] checkout-shell">
+        <div class="container mx-auto px-4 md:px-8" id="checkoutApp" v-cloak>
+            <div class="text-center max-w-2xl mx-auto mb-10">
+                <p class="text-xs uppercase tracking-[0.35em] text-[#9f8050] mb-3">LEIKA Checkout</p>
+                <h1 class="text-3xl md:text-4xl font-serif font-semibold tracking-wide mb-3 text-center">Thanh toán</h1>
+                <p class="text-sm md:text-base text-gray-500">Hoàn tất đơn hàng với thông tin giao nhận chính xác, xác thực rõ ràng và trải nghiệm thanh lịch đúng tinh thần LEIKA.</p>
+            </div>
+
+            <div v-if="!isLoggedIn" class="text-center py-20">
+                <i class="fa-solid fa-lock text-4xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 mb-6">Bạn cần đăng nhập để thanh toán</p>
+                <a href="/login" class="btn-luxe-dark px-10 py-3 inline-block">ĐĂNG NHẬP</a>
+            </div>
+
+            <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <!-- Shipping Info -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white p-8 md:p-10 checkout-card mb-6">
+                        <div class="flex items-start justify-between gap-4 pb-5 border-b border-black/5 mb-6">
+                            <div>
+                                <p class="checkout-section-title mb-2">Thông tin giao hàng</p>
+                                <h2 class="font-serif text-2xl font-semibold">Chi tiết nhận hàng</h2>
+                            </div>
+                            <div v-if="profileLoaded && form.fullName" class="hidden md:flex items-center gap-3 rounded-full px-4 py-2 bg-[#fcf7ee] border border-[#ecdab8] text-[#8d6a33] text-sm">
+                                <i class="fa-solid fa-user-check"></i>
+                                <span>Đã tự động điền từ tài khoản</span>
+                            </div>
+                        </div>
+
+                        <form @submit.prevent="placeOrder">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Họ và tên *</label>
+                                    <input
+                                        v-model.trim="form.fullName"
+                                        @blur="validateField('fullName')"
+                                        :class="fieldClass('fullName')"
+                                        class="checkout-field"
+                                        placeholder="Nguyễn Văn A">
+                                    <p v-if="fieldErrors.fullName" class="text-red-600 text-xs mt-2">{{ fieldErrors.fullName }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Số điện thoại *</label>
+                                    <input
+                                        v-model.trim="form.phone"
+                                        inputmode="numeric"
+                                        maxlength="10"
+                                        @input="sanitizePhone"
+                                        @blur="validateField('phone')"
+                                        :class="fieldClass('phone')"
+                                        class="checkout-field"
+                                        placeholder="09xxxxxxxx">
+                                    <p v-if="fieldErrors.phone" class="text-red-600 text-xs mt-2">{{ fieldErrors.phone }}</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-5">
+                                <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Địa chỉ *</label>
+                                <input
+                                    v-model.trim="form.address"
+                                    @blur="validateField('address')"
+                                    :class="fieldClass('address')"
+                                    class="checkout-field"
+                                    placeholder="Số nhà, tên đường">
+                                <p v-if="fieldErrors.address" class="text-red-600 text-xs mt-2">{{ fieldErrors.address }}</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Tỉnh/Thành *</label>
+                                    <select
+                                        v-model="selectedProvinceCode"
+                                        @change="onProvinceChange"
+                                        :class="fieldClass('province')"
+                                        class="checkout-select">
+                                        <option value="">Chọn Tỉnh/Thành</option>
+                                        <option v-for="province in provinces" :key="province.code" :value="province.code">{{ province.name }}</option>
+                                    </select>
+                                    <p v-if="fieldErrors.province" class="text-red-600 text-xs mt-2">{{ fieldErrors.province }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Quận/Huyện *</label>
+                                    <select
+                                        v-model="selectedDistrictCode"
+                                        @change="onDistrictChange"
+                                        :disabled="!districtOptions.length"
+                                        :class="fieldClass('district')"
+                                        class="checkout-select disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
+                                        <option value="">Chọn Quận/Huyện</option>
+                                        <option v-for="district in districtOptions" :key="district.code" :value="district.code">{{ district.name }}</option>
+                                    </select>
+                                    <p v-if="fieldErrors.district" class="text-red-600 text-xs mt-2">{{ fieldErrors.district }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Phường/Xã *</label>
+                                    <select
+                                        v-model="selectedWardCode"
+                                        @change="onWardChange"
+                                        :disabled="!wardOptions.length"
+                                        :class="fieldClass('ward')"
+                                        class="checkout-select disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
+                                        <option value="">Chọn Phường/Xã</option>
+                                        <option v-for="ward in wardOptions" :key="ward.code" :value="ward.code">{{ ward.name }}</option>
+                                    </select>
+                                    <p v-if="fieldErrors.ward" class="text-red-600 text-xs mt-2">{{ fieldErrors.ward }}</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-5">
+                                <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Ghi chú</label>
+                                <textarea v-model.trim="form.note" rows="3" class="checkout-textarea resize-none" placeholder="Ghi chú đơn hàng (tùy chọn)"></textarea>
+                            </div>
+
+                            <h2 class="font-semibold text-sm uppercase tracking-widest mb-4 mt-8 pb-3 border-b border-gray-100">Phương thức thanh toán</h2>
+                            <div class="space-y-3 mb-8">
+                                <label class="payment-option flex items-center gap-3 p-5 cursor-pointer" :class="form.paymentMethod === 'COD' ? 'active' : 'border-gray-200'">
+                                    <input type="radio" v-model="form.paymentMethod" value="COD" class="accent-black">
+                                    <span class="text-sm"><i class="fa-solid fa-truck mr-2"></i> Thanh toán khi nhận hàng (COD)</span>
+                                </label>
+                                <label class="payment-option flex items-center gap-3 p-5 cursor-pointer" :class="form.paymentMethod === 'VNPAY' ? 'active' : 'border-gray-200'">
+                                    <input type="radio" v-model="form.paymentMethod" value="VNPAY" class="accent-black">
+                                    <span class="text-sm"><i class="fa-solid fa-credit-card mr-2"></i> Thanh toán qua VNPAY</span>
+                                </label>
+                            </div>
+
+                            <button type="submit" :disabled="loading || !cart.items.length" class="w-full btn-luxe-dark py-4 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span v-if="!loading">ĐẶT HÀNG</span>
+                                <span v-else><i class="fa-solid fa-spinner fa-spin mr-2"></i>ĐANG XỬ LÝ...</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div>
+                    <div class="bg-white p-8 checkout-card sticky top-24">
+                        <div class="pb-5 border-b border-black/5 mb-6">
+                            <p class="checkout-section-title mb-2">Tóm tắt đơn hàng</p>
+                            <h2 class="font-serif text-2xl font-semibold">Đơn hàng của bạn</h2>
+                        </div>
+
+                        <div v-if="cart.items && cart.items.length > 0">
+                            <div v-for="item in cart.items" :key="item.cartItemId" class="flex gap-4 mb-4 pb-4 border-b border-gray-50">
+                                <img :src="item.thumbnailUrl || 'https://via.placeholder.com/80'" class="w-16 h-20 object-cover bg-gray-100 rounded-2xl">
+                                <div class="flex-1 text-sm">
+                                    <p class="font-medium">{{ item.productName }}</p>
+                                    <p class="text-gray-400 text-xs">{{ item.variantInfo }} × {{ item.quantity }}</p>
+                                    <p class="font-semibold mt-1">{{ formatPrice(item.lineTotal) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Coupon -->
+                            <div class="mb-4 pb-4 border-b border-gray-50">
+                                <div class="flex gap-2 items-start">
+                                    <input v-model.trim="form.couponCode" @input="handleCouponInput" type="text" placeholder="Mã giảm giá" class="checkout-field flex-1 !py-3 !px-4 text-sm uppercase" maxlength="20">
+                                    <button type="button" @click="applyCouponCode" class="btn-luxe px-5 py-[0.95rem] whitespace-nowrap">ÁP DỤNG</button>
+                                </div>
+                                <p v-if="couponMessage" :class="couponApplied ? 'text-emerald-600' : 'text-amber-700'" class="text-xs mt-3">{{ couponMessage }}</p>
+                                <div v-if="couponApplied" class="mt-3">
+                                    <span class="coupon-chip"><i class="fa-solid fa-tag"></i>{{ activeCoupon.code }} - giảm {{ activeCoupon.label }}</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3 text-sm mb-6">
+                                <div class="flex justify-between"><span class="summary-row-muted">Tạm tính</span><span>{{ formatPrice(cart.subTotal) }}</span></div>
+                                <div class="flex justify-between"><span class="summary-row-muted">Phí vận chuyển</span><span>{{ shippingFee > 0 ? formatPrice(shippingFee) : 'Miễn phí' }}</span></div>
+                                <div v-if="discountAmount > 0" class="flex justify-between text-emerald-700"><span>Giảm giá</span><span>-{{ formatPrice(discountAmount) }}</span></div>
+                                <div class="flex justify-between text-xs text-gray-400"><span>Điều kiện phí ship</span><span>{{ cart.subTotal >= freeShippingThreshold ? 'Miễn phí do đơn từ 500.000₫' : '30.000₫ cho đơn dưới 500.000₫' }}</span></div>
+                                <div class="flex justify-between font-semibold text-lg pt-3 border-t border-gray-200"><span>Tổng cộng</span><span>{{ formatPrice(finalTotal) }}</span></div>
+                            </div>
+                        </div>
+                        <div v-else class="text-center text-gray-400 py-8">
+                            <p>Giỏ hàng trống</p>
+                            <a href="/shop" class="text-sm text-black underline mt-2 inline-block">Tiếp tục mua sắm</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="successMsg" class="fixed top-24 right-6 bg-emerald-600 text-white px-6 py-4 text-sm rounded-2xl shadow-lg z-50 max-w-sm">
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-circle-check text-lg mt-0.5"></i>
+                    <div>
+                        <p class="font-semibold mb-1">Đặt hàng thành công</p>
+                        <p>{{ successMsg }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <div v-if="errorMsg" class="fixed bottom-6 right-6 bg-red-600 text-white px-6 py-3 text-sm rounded-2xl shadow-lg z-50 max-w-sm">
+                {{ errorMsg }}
+            </div>
+        </div>
+    </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Vue !== 'undefined' && document.getElementById('checkoutApp')) {
+            Vue.createApp({
+                data() {
+                    return {
+                        isLoggedIn: !!localStorage.getItem('leika_token'),
+                        cart: { items: [], subTotal: 0, shippingFee: 0, totalAmount: 0 },
+                        freeShippingThreshold: 500000,
+                        baseShippingFee: 30000,
+                        provinces: [],
+                        districtOptions: [],
+                        wardOptions: [],
+                        selectedProvinceCode: '',
+                        selectedDistrictCode: '',
+                        selectedWardCode: '',
+                        form: {
+                            fullName: '',
+                            phone: '',
+                            address: '',
+                            ward: '',
+                            district: '',
+                            province: '',
+                            paymentMethod: 'COD',
+                            note: '',
+                            couponCode: ''
+                        },
+                        fieldErrors: {},
+                        shakeMap: {},
+                        couponApplied: false,
+                        activeCoupon: null,
+                        couponMessage: '',
+                        loading: false,
+                        successOrder: {},
+                        successMsg: '',
+                        errorMsg: '',
+                        profileLoaded: false
+                    };
+                },
+                computed: {
+                    shippingFee() {
+                        return Number(this.cart.subTotal || 0) >= this.freeShippingThreshold ? 0 : this.baseShippingFee;
+                    },
+                    discountAmount() {
+                        if (!this.couponApplied || !this.activeCoupon) return 0;
+                        if (this.activeCoupon.type === 'PERCENT') {
+                            return Math.round(Number(this.cart.subTotal || 0) * this.activeCoupon.value / 100);
+                        }
+                        return this.activeCoupon.value;
+                    },
+                    finalTotal() {
+                        const total = Number(this.cart.subTotal || 0) - this.discountAmount + this.shippingFee;
+                        return total > 0 ? total : 0;
+                    }
+                },
+                mounted() {
+                    if (this.isLoggedIn) {
+                        this.loadCart();
+                        this.prefillUserInfo();
+                        this.loadAddressData();
+                        this.fetchProfile();
+                    }
+                },
+                methods: {
+                    fieldClass(fieldName) {
+                        return {
+                            'is-invalid': !!this.fieldErrors[fieldName],
+                            'field-shake': !!this.shakeMap[fieldName]
+                        };
+                    },
+                    sanitizePhone() {
+                        this.form.phone = String(this.form.phone || '').replace(/\D/g, '').slice(0, 10);
+                        if (this.fieldErrors.phone) {
+                            this.validateField('phone');
+                        }
+                    },
+                    prefillUserInfo() {
+                        try {
+                            const user = JSON.parse(localStorage.getItem('leika_user') || '{}');
+                            if (user.fullName) this.form.fullName = user.fullName;
+                            if (user.phoneNumber) this.form.phone = user.phoneNumber;
+                        } catch (err) {
+                            console.warn('Unable to parse user info', err);
+                        }
+                    },
+                    async fetchProfile() {
+                        try {
+                            const res = await window.LeikaAPI.get('/users/me');
+                            const data = res.data.data || {};
+                            if (data.fullName && !this.form.fullName) this.form.fullName = data.fullName;
+                            if (data.phoneNumber && !this.form.phone) this.form.phone = data.phoneNumber;
+
+                            localStorage.setItem('leika_user', JSON.stringify({
+                                email: data.email,
+                                fullName: data.fullName,
+                                phoneNumber: data.phoneNumber,
+                                role: data.roleName
+                            }));
+                        } catch (err) {
+                            console.error('Failed to fetch profile', err);
+                        } finally {
+                            this.profileLoaded = true;
+                        }
+                    },
+                    async loadCart() {
+                        try {
+                            const res = await window.LeikaAPI.get('/cart');
+                            this.cart = res.data.data;
+                        } catch (err) {
+                            console.error('Failed to load cart', err);
+                        }
+                    },
+                    async loadAddressData() {
+                        try {
+                            const response = await fetch('https://provinces.open-api.vn/api/?depth=3');
+                            if (!response.ok) {
+                                throw new Error('Remote address API unavailable');
+                            }
+                            this.provinces = await response.json();
+                        } catch (remoteError) {
+                            try {
+                                const fallbackResponse = await fetch('/data/vn-addresses.json');
+                                this.provinces = await fallbackResponse.json();
+                            } catch (fallbackError) {
+                                console.error('Failed to load address data', fallbackError || remoteError);
+                                this.errorMsg = 'Không thể tải dữ liệu địa chỉ. Vui lòng thử lại sau.';
+                                setTimeout(() => { this.errorMsg = ''; }, 5000);
+                            }
+                        }
+                    },
+                    onProvinceChange() {
+                        const province = this.provinces.find(item => String(item.code) === String(this.selectedProvinceCode));
+                        this.form.province = province ? province.name : '';
+                        this.districtOptions = province?.districts || [];
+                        this.selectedDistrictCode = '';
+                        this.selectedWardCode = '';
+                        this.wardOptions = [];
+                        this.form.district = '';
+                        this.form.ward = '';
+                        this.validateField('province');
+                        delete this.fieldErrors.district;
+                        delete this.fieldErrors.ward;
+                    },
+                    onDistrictChange() {
+                        const district = this.districtOptions.find(item => String(item.code) === String(this.selectedDistrictCode));
+                        this.form.district = district ? district.name : '';
+                        this.wardOptions = district?.wards || [];
+                        this.selectedWardCode = '';
+                        this.form.ward = '';
+                        this.validateField('district');
+                        delete this.fieldErrors.ward;
+                    },
+                    onWardChange() {
+                        const ward = this.wardOptions.find(item => String(item.code) === String(this.selectedWardCode));
+                        this.form.ward = ward ? ward.name : '';
+                        this.validateField('ward');
+                    },
+                    handleCouponInput() {
+                        if (!this.form.couponCode) {
+                            this.couponApplied = false;
+                            this.activeCoupon = null;
+                            this.couponMessage = '';
+                        }
+                    },
+                    async applyCouponCode() {
+                        const normalizedCode = this.form.couponCode.trim().toUpperCase();
+                        if (!normalizedCode) {
+                            this.couponApplied = false;
+                            this.activeCoupon = null;
+                            this.couponMessage = 'Nhập mã giảm giá để áp dụng ưu đãi.';
+                            return;
+                        }
+                        // Known coupons: LEIKA10 (10%), WELCOME10 (10%), SAVE50K (50,000₫ off)
+                        const knownCoupons = {
+                            'LEIKA10':   { type: 'PERCENT', value: 10,    label: 'Giảm 10%' },
+                            'WELCOME10': { type: 'PERCENT', value: 10,    label: 'Giảm 10%' },
+                            'SAVE50K':   { type: 'FIXED',   value: 50000, label: 'Giảm 50,000₫' }
+                        };
+                        const coupon = knownCoupons[normalizedCode];
+                        if (coupon) {
+                            this.form.couponCode = normalizedCode;
+                            this.couponApplied = true;
+                            this.activeCoupon = { code: normalizedCode, ...coupon };
+                            this.couponMessage = 'Áp dụng thành công mã ' + normalizedCode + '.';
+                        } else {
+                            this.couponApplied = false;
+                            this.activeCoupon = null;
+                            this.couponMessage = 'Mã giảm giá không hợp lệ. Vui lòng kiểm tra lại.';
+                        }
+                    },
+                    validateField(fieldName) {
+                        const validators = {
+                            fullName: () => this.form.fullName ? '' : 'Vui lòng điền thông tin này',
+                            phone: () => {
+                                if (!this.form.phone) return 'Vui lòng điền thông tin này';
+                                return /^(03|05|07|08|09)\d{8}$/.test(this.form.phone)
+                                    ? ''
+                                    : 'Số điện thoại phải gồm 10 số và bắt đầu bằng 03, 05, 07, 08 hoặc 09';
+                            },
+                            address: () => this.form.address ? '' : 'Vui lòng điền thông tin này',
+                            province: () => this.form.province ? '' : 'Vui lòng điền thông tin này',
+                            district: () => this.form.district ? '' : 'Vui lòng điền thông tin này',
+                            ward: () => this.form.ward ? '' : 'Vui lòng điền thông tin này'
+                        };
+
+                        if (!validators[fieldName]) return true;
+
+                        const error = validators[fieldName]();
+                        if (error) {
+                            this.fieldErrors[fieldName] = error;
+                            return false;
+                        }
+
+                        delete this.fieldErrors[fieldName];
+                        return true;
+                    },
+                    shakeField(fieldName) {
+                        this.shakeMap[fieldName] = true;
+                        setTimeout(() => {
+                            this.shakeMap[fieldName] = false;
+                        }, 420);
+                    },
+                    validateForm() {
+                        const requiredFields = ['fullName', 'phone', 'address', 'province', 'district', 'ward'];
+                        let isValid = true;
+
+                        requiredFields.forEach((field) => {
+                            const validField = this.validateField(field);
+                            if (!validField) {
+                                this.shakeField(field);
+                                isValid = false;
+                            }
+                        });
+
+                        if (!isValid) {
+                            this.errorMsg = 'Vui lòng kiểm tra lại thông tin giao hàng.';
+                            setTimeout(() => { this.errorMsg = ''; }, 4000);
+                        }
+
+                        return isValid;
+                    },
+                    async placeOrder() {
+                        if (!this.validateForm()) {
+                            return;
+                        }
+
+                        this.loading = true;
+                        this.errorMsg = '';
+                        try {
+                            const res = await window.LeikaAPI.post('/orders', this.form);
+                            this.successOrder = res.data.data;
+
+                            if (this.form.paymentMethod === 'VNPAY') {
+                                const params = new URLSearchParams({
+                                    orderId: String(this.successOrder.orderId || ''),
+                                    amount: String(this.successOrder.totalAmount || this.finalTotal),
+                                    name: this.form.fullName || 'LEIKA Client'
+                                });
+                                window.location.href = '/payment/vnpay?' + params.toString();
+                                return;
+                            }
+
+                            this.successMsg = 'Đơn hàng #' + this.successOrder.orderId + ' đã được ghi nhận. Đang chuyển về trang chủ...';
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 1800);
+                        } catch (err) {
+                            this.errorMsg = err.response?.data?.message || 'Đã có lỗi xảy ra khi đặt hàng';
+                            setTimeout(() => { this.errorMsg = ''; }, 5000);
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+                    formatPrice(val) {
+                        if (!val) return '0₫';
+                        return new Intl.NumberFormat('vi-VN').format(val) + '₫';
+                    }
+                }
+            }).mount('#checkoutApp');
+        }
+    });
+</script>
+
+</div>
+</body>
+</html>

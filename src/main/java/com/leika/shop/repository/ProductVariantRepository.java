@@ -1,0 +1,14 @@
+package com.leika.shop.repository;
+
+import com.leika.shop.entity.ProductVariant;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface ProductVariantRepository extends JpaRepository<ProductVariant, Integer> {
+    List<ProductVariant> findByProductProductIdAndIsActiveTrue(Integer productId);
+    Optional<ProductVariant> findBySku(String sku);
+}

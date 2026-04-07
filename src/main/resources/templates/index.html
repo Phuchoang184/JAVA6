@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>LEIKA LUXURY - Thời Trang Cao Cấp</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <!-- ═══════════════════════════════════════════════════
+         HERO – Dynamic Slider with Parallax & Animations
+         ═══════════════════════════════════════════════════ -->
+    <section class="hero hero--parallax">
+
+        <!-- ── Slide Track (horizontal) ─────────────────── -->
+        <div class="hero__track">
+
+        <!-- ── Slide 1: New Collection (Men) ────────────── -->
+        <div class="hero__slide active">
+            <img src="https://images.unsplash.com/photo-1516826957135-700dedea698c?w=1920&h=1080&fit=crop&q=85"
+                 alt="New Collection – Men's Spring Summer 2026"
+                 class="hero__bg" loading="eager" />
+            <div class="hero__overlay"></div>
+            <div class="hero__grain"></div>
+            <div class="hero__content">
+                <p class="hero__tag">Xuân Hè 2026</p>
+                <h1 class="hero__title">Định Nghĩa Lại<br><em>Sự Thanh Lịch</em></h1>
+                <p class="hero__desc">Khám phá đỉnh cao của thời trang hiện đại — nơi những đường nét vượt thời gian hòa quyện cùng sự tự tin mạnh mẽ trong bộ sưu tập mới nhất.</p>
+                <div class="hero__cta">
+                    <button type="button" id="discoverBtn" class="hero__btn btn-ripple" onclick="document.getElementById('discoverModal').classList.remove('hidden')">
+                        <span>Khám Phá Ngay</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Slide 2: Best Sellers (Women) ─────────────── -->
+        <div class="hero__slide">
+            <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&q=85"
+                 alt="Best Sellers – Women's Timeless Pieces"
+                 class="hero__bg" loading="lazy" />
+            <div class="hero__overlay"></div>
+            <div class="hero__grain"></div>
+            <div class="hero__content">
+                <p class="hero__tag">Được Yêu Thích Nhất</p>
+                <h1 class="hero__title">Vượt<br><em>Thời Gian</em></h1>
+                <p class="hero__desc">Những thiết kế bán chạy nhất vượt qua mọi xu hướng — tinh hoa được yêu thích bởi những tín đồ thời trang khắp nơi.</p>
+                <div class="hero__cta">
+                    <a href="/shop?sort=bestseller" class="hero__btn btn-ripple">
+                        <span>Xem Sản Phẩm Bán Chạy</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Slide 3: Promotion ───────────────────────── -->
+        <div class="hero__slide">
+            <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1920&h=1080&fit=crop&q=85"
+                 alt="Exclusive Promotion – Up to 40% Off"
+                 class="hero__bg" loading="lazy" />
+            <div class="hero__overlay"></div>
+            <div class="hero__grain"></div>
+            <div class="hero__content">
+                <p class="hero__tag">Ưu Đãi Có Hạn</p>
+                <h1 class="hero__title">Giảm Đến<br><em>40%</em></h1>
+                <p class="hero__desc">Nâng tầm phong cách của bạn với những ưu đãi đặc quyền trên các sản phẩm cao cấp — cơ hội dành riêng cho những người sành điệu.</p>
+                <div class="hero__cta">
+                    <a href="/sale" class="hero__btn btn-ripple">
+                        <span>Mua Ngay</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        </div><!-- /.hero__track -->
+
+        <!-- ── Floating Decorative Elements ─────────────── -->
+        <div class="hero__decor hero__decor--tl"></div>
+        <div class="hero__decor hero__decor--br"></div>
+        <div class="hero__decor hero__decor--circle"></div>
+        <div class="hero__decor hero__decor--line"></div>
+        <div class="hero__decor hero__decor--diamond"></div>
+        <div class="hero__decor hero__decor--orb"></div>
+
+        <!-- ── Vignette ─────────────────────────────────── -->
+        <div class="hero__vignette"></div>
+
+        <!-- ── Side Arrows ──────────────────────────────── -->
+        <button class="hero__arrow hero__arrow--prev" aria-label="Slide trước">
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+        </button>
+        <button class="hero__arrow hero__arrow--next" aria-label="Slide tiếp theo">
+            <i class="fa-solid fa-chevron-right text-sm"></i>
+        </button>
+
+        <!-- ── Progress Dots ────────────────────────────── -->
+        <div class="hero__nav">
+            <button class="hero__dot active" aria-label="Chuyển đến slide 1"></button>
+            <button class="hero__dot" aria-label="Chuyển đến slide 2"></button>
+            <button class="hero__dot" aria-label="Chuyển đến slide 3"></button>
+        </div>
+
+        <!-- ── Slide Counter ────────────────────────────── -->
+        <div class="hero__counter">
+            <span class="hero__counter-current">01</span>
+            <span>&nbsp;/&nbsp;</span>
+            <span class="hero__counter-total">03</span>
+        </div>
+
+        <!-- ── Side Label ───────────────────────────────── -->
+        <div class="hero__side-label">Leika Luxury &mdash; SS26</div>
+
+        <!-- ── Scroll Indicator ─────────────────────────── -->
+        <div class="hero__scroll">
+            <div class="hero__scroll-mouse">
+                <div class="hero__scroll-dot"></div>
+            </div>
+        </div>
+
+        <!-- ── Marquee Banner ───────────────────────────── -->
+        <div class="hero__marquee">
+            <div class="hero__marquee-track">
+                <span>Bộ Sưu Tập Mới Đã Ra Mắt</span>
+                <span class="marquee-dot">&#9830;</span>
+                <span>Miễn Phí Vận Chuyển Đơn Từ 1.000.000₫</span>
+                <span class="marquee-dot">&#9830;</span>
+                <span>Cam Kết Chất Lượng Cao Cấp</span>
+                <span class="marquee-dot">&#9830;</span>
+                <span>Giảm Đến 40% Sản Phẩm Chọn Lọc</span>
+                <span class="marquee-dot">&#9830;</span>
+                <span>Gói Quà Miễn Phí</span>
+                <span class="marquee-dot">&#9830;</span>
+                <span>Bộ Sưu Tập Mới Đã Ra Mắt</span>
+                <span class="marquee-dot">&#9830;</span>
+                <span>Miễn Phí Vận Chuyển Đơn Từ 1.000.000₫</span>
+                <span class="marquee-dot">&#9830;</span>
+                <span>Cam Kết Chất Lượng Cao Cấp</span>
+                <span class="marquee-dot">&#9830;</span>
+                <span>Giảm Đến 40% Sản Phẩm Chọn Lọc</span>
+                <span class="marquee-dot">&#9830;</span>
+                <span>Gói Quà Miễn Phí</span>
+                <span class="marquee-dot">&#9830;</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         BRAND VALUES STRIP
+         ═══════════════════════════════════════════ -->
+    <section class="py-10 bg-luxe-champagne border-y border-gray-200">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div class="reveal" style="transition-delay: 0s;">
+                    <i class="fa-solid fa-gem text-lg mb-2 text-luxe-gold"></i>
+                    <p class="text-xs uppercase tracking-[0.2em] font-medium">Chất Lượng Cao Cấp</p>
+                </div>
+                <div class="reveal" style="transition-delay: 0.1s;">
+                    <i class="fa-solid fa-truck-fast text-lg mb-2 text-luxe-gold"></i>
+                    <p class="text-xs uppercase tracking-[0.2em] font-medium">Miễn Phí Vận Chuyển</p>
+                </div>
+                <div class="reveal" style="transition-delay: 0.2s;">
+                    <i class="fa-solid fa-rotate-left text-lg mb-2 text-luxe-gold"></i>
+                    <p class="text-xs uppercase tracking-[0.2em] font-medium">Đổi Trả Dễ Dàng</p>
+                </div>
+                <div class="reveal" style="transition-delay: 0.3s;">
+                    <i class="fa-solid fa-shield-halved text-lg mb-2 text-luxe-gold"></i>
+                    <p class="text-xs uppercase tracking-[0.2em] font-medium">Thanh Toán An Toàn</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         NEW ARRIVALS – Product Grid
+         ═══════════════════════════════════════════ -->
+    <section class="py-24 bg-white">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="text-center mb-16 reveal">
+                <p class="text-xs tracking-[0.3em] uppercase text-luxe-gold mb-3 font-medium">Dành Riêng Cho Bạn</p>
+                <h2 class="text-4xl md:text-5xl font-serif font-semibold tracking-wide mb-4">Hàng Mới Về</h2>
+                <div class="w-12 h-px bg-luxe-gold mx-auto mb-6"></div>
+                <p class="text-gray-500 font-light max-w-xl mx-auto text-sm">Những thiết kế mới nhất với đường nét tinh tế và chất liệu sang trọng, tôn vinh phong cách của bạn một cách hoàn hảo.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                <!-- Dynamic Product Loop -->
+                <div th:each="product, iterStat : ${products}" class="product-card reveal" th:style="'transition-delay:' + ${iterStat.index * 0.1} + 's;'">
+                    <div class="card-img-wrap mb-4 bg-gray-50 h-[420px] md:h-[480px] relative">
+                        <img th:src="${product.thumbnailUrl != null && !product.thumbnailUrl.isEmpty() ? product.thumbnailUrl : 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80'}" th:alt="${product.productName}" class="card-img-primary" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80';">
+                        
+                        <!-- Quick View Button -->
+                        <a th:href="@{'/products/' + ${product.productId}}" class="quick-view-btn bg-white/95 backdrop-blur-sm text-luxe-black px-6 py-2.5 text-[10px] uppercase tracking-[0.2em] font-medium shadow-lg hover:bg-luxe-black hover:text-white transition-colors duration-300">
+                            Xem Nhanh
+                        </a>
+                        
+                        <!-- Hover Action (Quick Shop) -->
+                        <div class="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                            <a th:href="@{'/products/' + ${product.productId}}" 
+                                    class="btn-ripple w-full bg-luxe-black text-white text-center py-3 text-xs uppercase tracking-[0.2em] hover:bg-gray-800 transition-colors block">
+                                Chọn mua
+                            </a>
+                        </div>
+                    </div>
+                    <div class="px-1">
+                        <a th:href="@{'/products/' + ${product.productId}}" class="block group">
+                            <h3 class="font-medium text-sm mb-1.5 group-hover:text-gray-500 transition-colors duration-300 line-clamp-2" th:text="${product.productName}">Tên sản phẩm</h3>
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold text-sm" th:text="${#numbers.formatDecimal(product.salePrice != null ? product.salePrice : product.basePrice, 0, 'COMMA', 0, 'POINT')} + '₫'">890.000₫</span>
+                                <span th:if="${product.salePrice != null}" class="text-xs text-gray-400 line-through" th:text="${#numbers.formatDecimal(product.basePrice, 0, 'COMMA', 0, 'POINT')} + '₫'">1.290.000₫</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-16 text-center reveal">
+                <a href="/shop" class="btn-luxe btn-ripple px-12 py-4 inline-flex items-center gap-3 group">
+                    <span>Xem Tất Cả Sản Phẩm</span>
+                    <i class="fa-solid fa-arrow-right text-[10px] transition-transform duration-300 group-hover:translate-x-1"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         COLLECTION – Split Layout with Parallax
+         ═══════════════════════════════════════════ -->
+    <section class="bg-luxe-champagne">
+        <!-- Women's Collection: Text Left / Image Right -->
+        <div class="grid grid-cols-1 md:grid-cols-2 min-h-[600px]">
+            <div class="flex flex-col justify-center px-8 md:px-16 lg:px-24 py-16 order-2 md:order-1 reveal-left">
+                <p class="text-xs tracking-[0.3em] uppercase text-luxe-gold mb-4 font-medium">Bộ Sưu Tập</p>
+                <h3 class="text-4xl md:text-5xl font-serif mb-6 leading-tight">Thời Trang<br>Nữ</h3>
+                <p class="text-gray-500 font-light leading-relaxed mb-8 max-w-md text-sm">
+                    Bộ sưu tập thanh lịch với những thiết kế tối giản nhưng đầy cuốn hút, tôn vinh vẻ đẹp tự nhiên của phái đẹp.
+                </p>
+                <div>
+                    <a href="/collections?collection=spring-summer-2026" class="btn-luxe btn-ripple px-10 py-3.5 inline-flex items-center gap-3 group">
+                        <span>Khám Phá</span>
+                        <i class="fa-solid fa-arrow-right text-[10px] transition-transform duration-300 group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="relative overflow-hidden order-1 md:order-2 reveal-right">
+                <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1000&q=80" alt="Women Collection" class="w-full h-full object-cover transition-transform duration-[1.2s] hover:scale-105 min-h-[500px]">
+                <div class="absolute inset-0 bg-black/10"></div>
+            </div>
+        </div>
+        <!-- Men's Collection: Image Left / Text Right -->
+        <div class="grid grid-cols-1 md:grid-cols-2 min-h-[600px]">
+            <div class="relative overflow-hidden reveal-left">
+                <img src="https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=1000&q=80" alt="Men Collection" class="w-full h-full object-cover transition-transform duration-[1.2s] hover:scale-105 min-h-[500px]">
+                <div class="absolute inset-0 bg-black/10"></div>
+            </div>
+            <div class="flex flex-col justify-center px-8 md:px-16 lg:px-24 py-16 reveal-right">
+                <p class="text-xs tracking-[0.3em] uppercase text-luxe-gold mb-4 font-medium">Bộ Sưu Tập</p>
+                <h3 class="text-4xl md:text-5xl font-serif mb-6 leading-tight">Thời Trang<br>Nam</h3>
+                <p class="text-gray-500 font-light leading-relaxed mb-8 max-w-md text-sm">
+                    Phong cách lịch lãm, sang trọng dành cho quý ông hiện đại — nơi sự tự tin gặp gỡ thời trang đỉnh cao.
+                </p>
+                <div>
+                    <a href="/collections?collection=luxury-office" class="btn-luxe btn-ripple px-10 py-3.5 inline-flex items-center gap-3 group">
+                        <span>Khám Phá</span>
+                        <i class="fa-solid fa-arrow-right text-[10px] transition-transform duration-300 group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         EDITORIAL / LOOKBOOK BANNER
+         ═══════════════════════════════════════════ -->
+    <section class="relative h-[500px] md:h-[600px] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80" alt="Lookbook" class="absolute inset-0 w-full h-full object-cover parallax-img" data-speed="0.2">
+        <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+        <div class="relative z-10 h-full flex items-center">
+            <div class="container mx-auto px-4 md:px-8">
+                <div class="max-w-lg reveal-left">
+                    <p class="text-xs tracking-[0.3em] uppercase text-luxe-gold mb-4 font-medium">Lookbook Xuân Hè 2026</p>
+                    <h2 class="text-4xl md:text-6xl font-serif text-white mb-6 leading-tight">“Thời trang là lá chắn để chinh phục cuộc sống hằng ngày.”</h2>
+                    <p class="text-gray-300 font-light text-sm mb-8">— Bill Cunningham</p>
+                    <a href="/shop" class="btn-ripple inline-flex items-center gap-3 border border-white text-white px-10 py-3.5 uppercase tracking-[0.2em] text-xs font-medium hover:bg-white hover:text-black transition-all duration-500 group">
+                        <span>Xem Lookbook</span>
+                        <i class="fa-solid fa-arrow-right text-[10px] transition-transform duration-300 group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         DISCOVER MODAL – Newsletter Subscription
+         ═══════════════════════════════════════════ -->
+    <div id="discoverModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="discoverModalTitle">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeDiscoverModal()"></div>
+        <!-- Modal Card -->
+        <div class="relative bg-white max-w-lg w-full mx-4 overflow-hidden" style="animation: modalSlideUp 0.4s cubic-bezier(0.16,1,0.3,1)">
+            <!-- Decorative top bar -->
+            <div class="h-1 bg-gradient-to-r from-black via-gray-600 to-black"></div>
+            <!-- Close Button -->
+            <button type="button" onclick="closeDiscoverModal()"
+                    class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-black transition-colors"
+                    aria-label="Đóng">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <!-- Content -->
+            <div class="px-10 pt-10 pb-12">
+                <p class="text-[10px] tracking-[0.35em] uppercase text-luxe-gold mb-3 font-medium">Ưu Đãi Thành Viên</p>
+                <h2 id="discoverModalTitle" class="text-3xl font-serif mb-2 leading-tight">Khám Phá Bộ Sưu Tập</h2>
+                <p class="text-sm text-gray-500 font-light mb-8 leading-relaxed">Đăng ký để nhận thông tin về bộ sưu tập mới nhất, ưu đãi độc quyền và nội dung lookbook trước khi ra mắt công khai.</p>
+                <!-- Form -->
+                <form id="discoverForm" onsubmit="handleDiscoverSubmit(event)" class="space-y-4" novalidate>
+                    <div>
+                        <input type="text" id="discoverName" name="name" placeholder="Họ và tên" required
+                               autocomplete="name"
+                               class="w-full border border-gray-200 px-4 py-3.5 text-sm placeholder-gray-400 focus:border-black focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <input type="email" id="discoverEmail" name="email" placeholder="Địa chỉ email" required
+                               autocomplete="email"
+                               class="w-full border border-gray-200 px-4 py-3.5 text-sm placeholder-gray-400 focus:border-black focus:outline-none transition-colors">
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-luxe-black text-white py-4 text-xs uppercase tracking-[0.25em] hover:bg-gray-800 transition-colors duration-300 font-medium">
+                        Đăng Ký Nhận Ưu Đãi
+                    </button>
+                </form>
+                <!-- Success message (hidden by default) -->
+                <div id="discoverSuccess" class="hidden text-center py-4">
+                    <i class="fa-solid fa-check-circle text-3xl text-green-500 mb-3"></i>
+                    <p class="font-medium mb-1">Đăng ký thành công!</p>
+                    <p class="text-sm text-gray-500">Cảm ơn bạn. Chúng tôi sẽ gửi thông tin ưu đãi sớm nhất.</p>
+                    <a href="/shop" class="inline-flex items-center gap-2 mt-4 text-xs uppercase tracking-[0.2em] underline hover:text-gray-500 transition-colors">
+                        Xem bộ sưu tập ngay <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+                <p class="text-xs text-gray-400 text-center mt-5">Bạn có thể hủy đăng ký bất cứ lúc nào. Chúng tôi cam kết bảo mật thông tin.</p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(32px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+
+    <script>
+        function closeDiscoverModal() {
+            document.getElementById('discoverModal').classList.add('hidden');
+            // Reset form on close
+            document.getElementById('discoverForm').classList.remove('hidden');
+            document.getElementById('discoverSuccess').classList.add('hidden');
+            document.getElementById('discoverForm').reset();
+        }
+        function handleDiscoverSubmit(e) {
+            e.preventDefault();
+            var name  = document.getElementById('discoverName').value.trim();
+            var email = document.getElementById('discoverEmail').value.trim();
+            if (!name || !email) return;
+            // Show success state
+            document.getElementById('discoverForm').classList.add('hidden');
+            document.getElementById('discoverSuccess').classList.remove('hidden');
+        }
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeDiscoverModal();
+        });
+    </script>
+
+</div>
+</body>
+</html>

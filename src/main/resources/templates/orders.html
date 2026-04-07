@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Đơn hàng | LEIKA LUXURY</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <section class="py-16 bg-gray-50 min-h-[80vh]">
+        <div class="container mx-auto px-4 md:px-8 max-w-5xl" id="ordersApp">
+
+            <div v-if="!isLoggedIn" class="text-center py-20">
+                <i class="fa-solid fa-box text-5xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 mb-6">Bạn cần đăng nhập để xem đơn hàng</p>
+                <a href="/login" class="btn-luxe-dark px-10 py-3 inline-block">ĐĂNG NHẬP</a>
+            </div>
+
+            <div v-else>
+                <h1 class="text-3xl font-serif font-semibold tracking-wide mb-10 text-center">Đơn hàng của tôi</h1>
+
+                <div v-if="loading" class="text-center py-20">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl text-gray-400"></i>
+                    <p class="text-gray-400 mt-4">Đang tải...</p>
+                </div>
+
+                <div v-else-if="orders.length === 0" class="text-center py-20 bg-white border border-gray-100">
+                    <i class="fa-solid fa-box-open text-5xl text-gray-200 mb-4"></i>
+                    <p class="text-gray-500 mb-6">Bạn chưa có đơn hàng nào</p>
+                    <a href="/shop" class="btn-luxe px-8 py-3 inline-block">MUA SẮM NGAY</a>
+                </div>
+
+                <div v-else class="space-y-4">
+                    <div v-for="order in orders" :key="order.orderId" class="bg-white border border-gray-100 overflow-hidden">
+                        <div class="flex flex-wrap items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-100">
+                            <div class="flex items-center gap-6 text-sm">
+                                <span class="font-medium">Đơn #{{ order.orderId }}</span>
+                                <span class="text-gray-400">{{ formatDate(order.createdAt) }}</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="text-xs px-3 py-1 uppercase tracking-wider font-medium"
+                                      :class="statusClass(order.orderStatus)">
+                                    {{ statusText(order.orderStatus) }}
+                                </span>
+                                <span class="text-xs px-3 py-1 uppercase tracking-wider"
+                                      :class="order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'">
+                                    {{ order.paymentStatus === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex flex-wrap justify-between items-center text-sm">
+                                <div class="space-y-1">
+                                    <p><span class="text-gray-500">Phương thức:</span> {{ order.paymentMethod }}</p>
+                                    <p v-if="order.note"><span class="text-gray-500">Ghi chú:</span> {{ order.note }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-gray-500 text-xs mb-1">Tổng cộng</p>
+                                    <p class="text-xl font-semibold">{{ formatPrice(order.totalAmount) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Vue !== 'undefined' && document.getElementById('ordersApp')) {
+            Vue.createApp({
+                data() {
+                    return {
+                        isLoggedIn: !!localStorage.getItem('leika_token'),
+                        orders: [],
+                        loading: true
+                    }
+                },
+                mounted() {
+                    if (this.isLoggedIn) this.loadOrders();
+                    else this.loading = false;
+                },
+                methods: {
+                    async loadOrders() {
+                        try {
+                            const res = await window.LeikaAPI.get('/orders');
+                            this.orders = res.data.data;
+                        } catch (err) {
+                            console.error('Failed to load orders', err);
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+                    formatPrice(val) {
+                        if (!val) return '0₫';
+                        return new Intl.NumberFormat('vi-VN').format(val) + '₫';
+                    },
+                    formatDate(dt) {
+                        if (!dt) return '';
+                        return new Date(dt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    },
+                    statusText(s) {
+                        const map = { PENDING: 'Chờ xác nhận', CONFIRMED: 'Đã xác nhận', PROCESSING: 'Đang xử lý', SHIPPED: 'Đang giao', DELIVERED: 'Đã giao', CANCELLED: 'Đã hủy' };
+                        return map[s] || s;
+                    },
+                    statusClass(s) {
+                        const map = { PENDING: 'bg-yellow-100 text-yellow-700', CONFIRMED: 'bg-blue-100 text-blue-700', PROCESSING: 'bg-indigo-100 text-indigo-700', SHIPPED: 'bg-purple-100 text-purple-700', DELIVERED: 'bg-green-100 text-green-700', CANCELLED: 'bg-red-100 text-red-700' };
+                        return map[s] || 'bg-gray-100 text-gray-700';
+                    }
+                }
+            }).mount('#ordersApp');
+        }
+    });
+</script>
+
+</div>
+</body>
+</html>

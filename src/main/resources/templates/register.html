@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Đăng ký | LEIKA LUXURY</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <section class="min-h-[80vh] flex items-center justify-center py-20 bg-gray-50">
+        <div class="w-full max-w-md mx-auto px-6">
+            <div class="bg-white p-10 border border-gray-100">
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl font-serif font-semibold tracking-wide mb-2">Tạo tài khoản</h1>
+                    <div class="w-12 h-px bg-black mx-auto mb-4"></div>
+                    <p class="text-sm text-gray-500">Tham gia LEIKA LUXURY để trải nghiệm mua sắm cao cấp</p>
+                </div>
+
+                <div id="registerApp" v-pre>
+                    <div v-if="errorMsg" class="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 text-sm rounded">{{ errorMsg }}</div>
+                    <div v-if="successMsg" class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 text-sm rounded">{{ successMsg }}</div>
+
+                    <form @submit.prevent="handleRegister">
+                        <div class="mb-5">
+                            <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Họ và tên</label>
+                            <input v-model="fullName" type="text" required
+                                   class="w-full border border-gray-300 px-4 py-3 text-sm focus:border-black focus:outline-none transition-colors"
+                                   placeholder="Nguyễn Văn A">
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Email</label>
+                            <input v-model="email" type="email" required
+                                   class="w-full border border-gray-300 px-4 py-3 text-sm focus:border-black focus:outline-none transition-colors"
+                                   placeholder="email@example.com">
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Số điện thoại</label>
+                            <input v-model="phone" type="tel" 
+                                   class="w-full border border-gray-300 px-4 py-3 text-sm focus:border-black focus:outline-none transition-colors"
+                                   placeholder="0901234567">
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Mật khẩu</label>
+                            <input v-model="password" type="password" required minlength="6"
+                                   class="w-full border border-gray-300 px-4 py-3 text-sm focus:border-black focus:outline-none transition-colors"
+                                   placeholder="Tối thiểu 6 ký tự">
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-xs uppercase tracking-widest text-gray-500 mb-2">Xác nhận mật khẩu</label>
+                            <input v-model="confirmPassword" type="password" required
+                                   class="w-full border border-gray-300 px-4 py-3 text-sm focus:border-black focus:outline-none transition-colors"
+                                   placeholder="Nhập lại mật khẩu">
+                        </div>
+
+                        <button type="submit" :disabled="loading"
+                                class="w-full btn-luxe-dark py-3 text-sm disabled:opacity-50">
+                            <span v-if="!loading">TẠO TÀI KHOẢN</span>
+                            <span v-else>Đang xử lý...</span>
+                        </button>
+                    </form>
+
+                    <div class="mt-8 text-center text-sm text-gray-500">
+                        Đã có tài khoản?
+                        <a href="/login" class="text-black font-medium hover:underline">Đăng nhập</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+</body>
+</html>

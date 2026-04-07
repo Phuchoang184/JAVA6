@@ -1,0 +1,29 @@
+# ── Build output ──────────────────────────────────
+target/
+*.class
+*.jar
+*.war
+
+# ── IDE files ─────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
+
+# ── Maven wrapper cache ───────────────────────────
+.mvn/
+
+# ── Secrets / config with credentials ────────────
+# application.properties contains DB password & OpenAI key — never commit
+src/main/resources/application.properties
+src/main/resources/application-*.properties
+!src/main/resources/application-example.properties
+
+# ── Logs ──────────────────────────────────────────
+*.log
+logs/
+
+# ── OS files ──────────────────────────────────────
+.DS_Store
+Thumbs.db

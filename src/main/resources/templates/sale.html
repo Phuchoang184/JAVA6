@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Khuyến mãi | LEIKA LUXURY</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div id="salePageApp">
+        <section class="relative overflow-hidden bg-[#140f10] py-16 text-white md:py-24">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(179,32,32,0.45),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(201,169,110,0.26),_transparent_24%)]"></div>
+            <div class="container relative mx-auto px-4 md:px-8">
+                <div class="grid gap-8 xl:grid-cols-[1.1fr_0.9fr] xl:items-end">
+                    <div>
+                        <p class="mb-4 text-[11px] font-semibold uppercase tracking-[0.35em] text-[#f1c984] reveal">Flash Sale Chapter</p>
+                        <h1 class="font-serif text-4xl leading-tight md:text-6xl reveal" style="transition-delay:0.08s;">Khuyến mãi phải tạo cảm giác gấp, rõ và đủ sang để vẫn đúng LEIKA.</h1>
+                        <p class="mt-6 max-w-3xl text-sm leading-7 text-white/75 reveal" style="transition-delay:0.16s;">
+                            Countdown đặt ở trên cùng, badge giảm giá dùng tông đỏ và gold, giá gốc gạch ngang rõ ràng và mỗi sản phẩm có thêm progress bar để nhấn mạnh cảm giác sắp hết hàng.
+                        </p>
+                    </div>
+                    <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur reveal" style="transition-delay:0.22s;">
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <p class="text-[10px] uppercase tracking-[0.3em] text-white/40">Flash ends in</p>
+                                <h2 class="mt-2 font-serif text-2xl text-white">Đếm ngược ưu đãi</h2>
+                            </div>
+                            <span class="rounded-full border border-[#f1c984]/30 bg-[#f1c984]/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#f1c984]">Live campaign</span>
+                        </div>
+
+                        <div class="mt-6 grid grid-cols-4 gap-3 text-center">
+                            <div class="rounded-[1.4rem] border border-white/10 bg-black/20 px-3 py-4">
+                                <p class="font-serif text-3xl">{{ countdown.days }}</p>
+                                <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/45">Days</p>
+                            </div>
+                            <div class="rounded-[1.4rem] border border-white/10 bg-black/20 px-3 py-4">
+                                <p class="font-serif text-3xl">{{ countdown.hours }}</p>
+                                <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/45">Hours</p>
+                            </div>
+                            <div class="rounded-[1.4rem] border border-white/10 bg-black/20 px-3 py-4">
+                                <p class="font-serif text-3xl">{{ countdown.minutes }}</p>
+                                <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/45">Minutes</p>
+                            </div>
+                            <div class="rounded-[1.4rem] border border-white/10 bg-black/20 px-3 py-4">
+                                <p class="font-serif text-3xl">{{ countdown.seconds }}</p>
+                                <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/45">Seconds</p>
+                            </div>
+                        </div>
+
+                        <div v-if="flashFeatured.length > 0" class="mt-6 grid gap-3 sm:grid-cols-3">
+                            <div v-for="product in flashFeatured" :key="product.productId" class="rounded-[1.35rem] border border-white/10 bg-white/5 p-4">
+                                <p class="text-[10px] uppercase tracking-[0.25em] text-[#f1c984]">Top deal</p>
+                                <h3 class="mt-2 font-serif text-lg leading-tight text-white">{{ product.nameParts.primary }}</h3>
+                                <p class="mt-2 text-xs text-white/60">-{{ product.discountPercent }}% trên giá gốc</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-[#fffaf4] py-10 md:py-16">
+            <div class="container mx-auto px-4 md:px-8">
+                <div class="mb-6 flex flex-col gap-4 rounded-[2rem] border border-[#ecdccc] bg-white px-5 py-5 shadow-[0_18px_55px_rgba(10,10,10,0.05)] md:flex-row md:items-center md:justify-between md:px-7">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-[0.3em] text-gray-400">Campaign tabs</p>
+                        <h2 class="mt-2 font-serif text-3xl text-luxe-black">Chọn mức ưu đãi muốn săn</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key" class="rounded-full px-4 py-3 text-xs font-semibold uppercase tracking-[0.22em] transition" :class="activeTab === tab.key ? 'bg-luxe-black text-white' : 'border border-[#eadfce] bg-white text-luxe-black hover:border-luxe-black'">
+                            {{ tab.label }} <span class="ml-2 opacity-60">{{ tabCount(tab.key) }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div v-if="loading" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                    <div v-for="skeleton in 8" :key="skeleton" class="rounded-[2rem] border border-[#ecdccc] bg-white p-4 shadow-[0_18px_55px_rgba(10,10,10,0.04)]">
+                        <div class="h-72 animate-pulse rounded-[1.5rem] bg-[#f5eee4]"></div>
+                        <div class="mt-4 h-4 w-24 animate-pulse rounded-full bg-[#f5eee4]"></div>
+                        <div class="mt-3 h-6 w-4/5 animate-pulse rounded-full bg-[#f5eee4]"></div>
+                        <div class="mt-3 h-4 w-3/5 animate-pulse rounded-full bg-[#f5eee4]"></div>
+                    </div>
+                </div>
+
+                <div v-else-if="filteredProducts.length > 0" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                    <article v-for="product in filteredProducts" :key="product.productId + '-' + activeTab" class="group overflow-hidden rounded-[2rem] border border-[#ecdccc] bg-white p-4 shadow-[0_18px_55px_rgba(10,10,10,0.04)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_28px_80px_rgba(10,10,10,0.12)]">
+                        <div class="relative overflow-hidden rounded-[1.45rem] bg-[#f5eee4]">
+                            <a :href="'/products/' + product.productId" class="block h-72 overflow-hidden sm:h-80">
+                                <img :src="product.displayImageUrl" :alt="product.productName" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                            </a>
+                            <div class="absolute inset-x-4 top-4 flex items-start justify-between gap-3">
+                                <span class="rounded-full bg-[#8f1d1d] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-lg">-{{ product.discountPercent }}%</span>
+                                <span class="rounded-full border border-[#f1c984]/35 bg-[#f1c984] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#2b1a00] shadow-lg">Flash Deal</span>
+                            </div>
+                            <div class="pointer-events-none absolute inset-x-4 bottom-4 translate-y-4 opacity-0 transition duration-300 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
+                                <button @click.prevent="openQuickView(product)" class="w-full rounded-[1.15rem] bg-white/92 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-luxe-black backdrop-blur transition hover:bg-luxe-black hover:text-white">Quick View</button>
+                            </div>
+                        </div>
+
+                        <div class="px-1 pt-4">
+                            <p class="text-[10px] uppercase tracking-[0.25em] text-gray-400">{{ product.categoryName || 'LEIKA Sale' }}</p>
+                            <a :href="'/products/' + product.productId" class="mt-2 block">
+                                <h3 class="font-serif text-2xl leading-tight text-luxe-black">{{ product.nameParts.primary }}</h3>
+                                <p class="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">{{ product.nameParts.secondary }}</p>
+                            </a>
+
+                            <div class="mt-4 flex items-end gap-3">
+                                <p class="text-xl font-semibold text-[#8f1d1d]">{{ formatPrice(product.salePrice || product.basePrice) }}</p>
+                                <p class="pb-0.5 text-sm text-gray-400 line-through">{{ formatPrice(product.basePrice) }}</p>
+                            </div>
+
+                            <div class="mt-5 rounded-[1.25rem] bg-[#f9f2ea] p-4">
+                                <div class="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em] text-gray-500">
+                                    <span>Khan hiếm</span>
+                                    <span>{{ scarcityLabel(product) }}</span>
+                                </div>
+                                <div class="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                                    <div class="h-full rounded-full bg-gradient-to-r from-[#8f1d1d] via-[#c84f3e] to-[#f1c984]" :style="{ width: scarcityProgress(product) + '%' }"></div>
+                                </div>
+                            </div>
+
+                            <div class="mt-5 grid grid-cols-2 gap-3">
+                                <button @click="openQuickView(product)" class="rounded-full border border-luxe-black px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-luxe-black transition hover:bg-luxe-black hover:text-white">Xem nhanh</button>
+                                <button @click="quickAdd(product)" class="rounded-full bg-luxe-black px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white transition hover:bg-[#2d2d2d]">Thêm vào giỏ</button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div v-else class="rounded-[2rem] border border-dashed border-[#d8cbb9] bg-white px-6 py-14 text-center shadow-[0_18px_55px_rgba(10,10,10,0.04)]">
+                    <p class="text-[10px] uppercase tracking-[0.3em] text-gray-400">Campaign empty</p>
+                    <h3 class="mt-3 font-serif text-3xl text-luxe-black">Tab này hiện chưa có sản phẩm đúng mức ưu đãi.</h3>
+                    <p class="mx-auto mt-3 max-w-xl text-sm leading-7 text-gray-500">Giao diện tab và countdown đã sẵn sàng. Khi dữ liệu sale sâu hơn được cập nhật, trang sẽ tự lấp đầy đúng nhóm ưu đãi tương ứng mà không cần đổi UI.</p>
+                    <button @click="activeTab = 'all'" class="mt-6 rounded-full bg-luxe-black px-6 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-white transition hover:bg-[#2d2d2d]">Quay lại Flash picks</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick View Modal -->
+        <transition enter-active-class="transition duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+            <div v-if="quickViewOpen" class="fixed inset-0 z-[70] bg-black/55 backdrop-blur-sm" @click.self="closeQuickView">
+                <div class="flex min-h-full items-center justify-center p-4 md:p-8">
+                    <div class="relative w-full max-w-4xl overflow-hidden rounded-[2rem] bg-white shadow-[0_35px_120px_rgba(0,0,0,0.35)]">
+                        <button @click="closeQuickView" class="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-luxe-black shadow-lg transition hover:bg-luxe-black hover:text-white">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+
+                        <div v-if="quickViewLoading" class="grid min-h-[28rem] place-items-center bg-[#faf6f1] px-6 py-20 text-center">
+                            <div>
+                                <div class="mx-auto h-14 w-14 animate-spin rounded-full border-2 border-[#d9c4a1] border-t-luxe-black"></div>
+                                <p class="mt-4 text-sm uppercase tracking-[0.24em] text-gray-400">Loading</p>
+                            </div>
+                        </div>
+
+                        <div v-else-if="quickProduct" class="grid gap-0 md:grid-cols-[0.95fr_1.05fr]">
+                            <div class="relative bg-[#f8f2ea] p-5 md:p-8">
+                                <!-- Sale badge overlay -->
+                                <span class="absolute left-6 top-6 z-10 rounded-full bg-[#8f1d1d] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white shadow-lg">-{{ quickProduct.discountPercent }}%</span>
+                                <div class="overflow-hidden rounded-[1.75rem] bg-white">
+                                    <img :src="quickProduct.displayImageUrl" :alt="quickProduct.productName" class="h-full min-h-[20rem] w-full object-cover md:min-h-[32rem]">
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col justify-between p-6 md:p-10">
+                                <div>
+                                    <p class="text-[10px] uppercase tracking-[0.28em] text-gray-400">{{ quickProduct.brandName || 'LEIKA' }}</p>
+                                    <h3 class="mt-3 font-serif text-3xl leading-tight text-luxe-black md:text-4xl">{{ quickProduct.nameParts.primary }}</h3>
+                                    <p class="mt-2 text-xs uppercase tracking-[0.24em] text-luxe-gold">{{ quickProduct.nameParts.secondary }}</p>
+
+                                    <div class="mt-5 flex flex-wrap items-center gap-3">
+                                        <p class="text-2xl font-semibold text-[#8f1d1d]">{{ formatPrice(quickProduct.salePrice || quickProduct.basePrice) }}</p>
+                                        <p v-if="quickProduct.basePrice && quickProduct.salePrice" class="text-base text-gray-400 line-through">{{ formatPrice(quickProduct.basePrice) }}</p>
+                                    </div>
+
+                                    <div class="mt-5 rounded-[1.25rem] bg-[#f9f2ea] p-4">
+                                        <div class="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-gray-500">
+                                            <span>Khan hiếm</span><span>{{ scarcityLabel(quickProduct) }}</span>
+                                        </div>
+                                        <div class="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                                            <div class="h-full rounded-full bg-gradient-to-r from-[#8f1d1d] via-[#c84f3e] to-[#f1c984]" :style="{ width: scarcityProgress(quickProduct) + '%' }"></div>
+                                        </div>
+                                    </div>
+
+                                    <p class="mt-6 text-sm leading-7 text-gray-600">{{ quickProduct.description || 'Thiết kế được lựa chọn trong chiến dịch Flash Sale — số lượng có hạn.' }}</p>
+                                </div>
+
+                                <div class="mt-8 space-y-5">
+                                    <div v-if="quickProduct.variants && quickProduct.variants.length > 0">
+                                        <div class="mb-3 flex items-center justify-between">
+                                            <p class="text-[10px] uppercase tracking-[0.28em] text-gray-400">Phiên bản</p>
+                                            <p v-if="quickSelectedVariant" class="text-xs text-gray-500">Kho: {{ quickSelectedVariant.stockQty }}</p>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button v-for="variant in quickProduct.variants" :key="variant.variantId" @click="quickSelectedVariantId = variant.variantId" class="rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition" :class="quickSelectedVariantId === variant.variantId ? 'border-luxe-black bg-luxe-black text-white' : 'border-[#eadfce] text-luxe-black hover:border-luxe-black'">
+                                                {{ variant.sku }}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-col gap-3 sm:flex-row">
+                                        <a :href="'/products/' + quickProduct.productId" class="flex-1 rounded-full border border-luxe-black px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.24em] text-luxe-black transition hover:bg-luxe-black hover:text-white">Xem chi tiết</a>
+                                        <button @click="addQuickViewToCart" :disabled="!quickSelectedVariantId" class="flex-1 rounded-full bg-[#8f1d1d] px-5 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:bg-[#6e1515] disabled:cursor-not-allowed disabled:opacity-50">Thêm vào giỏ</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+    </div>
+
+    <script th:src="@{/js/sale-page.js}"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Giỏ hàng | LEIKA LUXURY</title>
+</head>
+<body>
+<div th:fragment="content">
+
+    <!-- Page Header -->
+    <section class="bg-gray-50 py-12">
+        <div class="container mx-auto px-4 md:px-8 text-center">
+            <h1 class="text-3xl font-serif mb-3 tracking-wide uppercase">Giỏ hàng của bạn</h1>
+            <p class="text-gray-500 font-light text-sm">Xem lại các sản phẩm và tiến hành thanh toán</p>
+        </div>
+    </section>
+
+    <!-- Cart Content -->
+    <section class="py-16" id="cartPageApp" v-cloak>
+        <div class="container mx-auto px-4 md:px-8">
+
+            <!-- Loading State -->
+            <div v-if="loading" class="text-center py-20">
+                <div class="inline-block w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-gray-500">Đang tải giỏ hàng...</p>
+            </div>
+
+            <!-- Order Success -->
+            <div v-else-if="orderSuccess" class="text-center py-20 max-w-lg mx-auto">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fa-solid fa-check text-green-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-serif mb-4">Đặt hàng thành công!</h2>
+                <p class="text-gray-500 mb-2">Mã đơn hàng: <strong>#{{ orderSuccess.orderId }}</strong></p>
+                <p class="text-gray-500 mb-8">Tổng thanh toán: <strong>{{ formatPrice(orderSuccess.totalAmount) }}</strong></p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/orders" class="inline-block bg-black text-white px-8 py-3 uppercase tracking-widest text-sm hover:bg-gray-800 transition-colors">
+                        Xem đơn hàng
+                    </a>
+                    <a href="/shop" class="inline-block border border-black text-black px-8 py-3 uppercase tracking-widest text-sm hover:bg-black hover:text-white transition-colors">
+                        Tiếp tục mua sắm
+                    </a>
+                </div>
+            </div>
+
+            <div v-else-if="cartItems.length === 0" class="text-center py-20">
+                <i class="fa-solid fa-bag-shopping text-6xl text-gray-200 mb-6"></i>
+                <h2 class="text-2xl font-serif mb-4">Giỏ hàng trống</h2>
+                <p class="text-gray-500 mb-8">Bạn chưa chọn sản phẩm nào vào giỏ hàng.</p>
+                <a href="/shop" class="inline-block bg-black text-white px-8 py-3 uppercase tracking-widest text-sm hover:bg-gray-800 transition-colors">
+                    Tiếp tục mua sắm
+                </a>
+            </div>
+            
+            <div v-else class="flex flex-col lg:flex-row gap-12">
+                <!-- Cart Items -->
+                <div class="w-full lg:w-2/3">
+                    <div class="hidden md:grid grid-cols-12 gap-4 pb-4 border-b border-gray-200 uppercase tracking-wider text-xs font-medium text-gray-500">
+                        <div class="col-span-6">Sản phẩm</div>
+                        <div class="col-span-2 text-center">Đơn giá</div>
+                        <div class="col-span-2 text-center">Số lượng</div>
+                        <div class="col-span-2 text-right">Tổng</div>
+                    </div>
+                    
+                    <div class="divide-y divide-gray-200">
+                        <!-- Item -->
+                        <div v-for="(item, index) in cartItems" :key="index" class="py-6 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                            <!-- Mobile View (Hidden on MD) -->
+                            <div class="md:hidden flex gap-4">
+                                <img :src="item.image" alt="Product" class="w-24 h-32 object-cover bg-gray-50">
+                                <div class="flex-grow flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex justify-between">
+                                            <a href="#" class="font-medium text-sm">{{ item.name }}</a>
+                                            <button @click="removeItem(item.id)" class="text-gray-400 hover:text-black"><i class="fa-regular fa-trash-can"></i></button>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">{{ item.variant }}</p>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="border border-gray-300 flex">
+                                            <button @click="updateQuantity(item.id, item.quantity - 1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100">-</button>
+                                            <input type="number" v-model.number="item.quantity" class="w-10 text-center text-sm border-none focus:ring-0 p-0" readonly>
+                                            <button @click="updateQuantity(item.id, item.quantity + 1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100">+</button>
+                                        </div>
+                                        <span class="font-medium text-sm">{{ formatPrice(item.price * item.quantity) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Desktop View -->
+                            <div class="hidden md:flex col-span-6 gap-6 items-center">
+                                <img :src="item.image" alt="Product" class="w-20 h-28 object-cover bg-gray-50">
+                                <div>
+                                    <a href="#" class="font-medium hover:text-gray-600 transition-colors">{{ item.name }}</a>
+                                    <p class="text-sm text-gray-500 mt-1">{{ item.variant }}</p>
+                                    <button @click="removeItem(item.id)" class="text-xs text-gray-400 hover:text-black mt-3 flex items-center gap-1 uppercase tracking-wide">
+                                        <i class="fa-regular fa-trash-can"></i> Xóa
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="hidden md:block col-span-2 text-center text-sm">
+                                {{ formatPrice(item.price) }}
+                            </div>
+                            <div class="hidden md:flex col-span-2 justify-center">
+                                <div class="border border-gray-300 flex">
+                                    <button @click="updateQuantity(item.id, item.quantity - 1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100">-</button>
+                                    <input type="number" v-model.number="item.quantity" class="w-12 text-center text-sm border-none focus:ring-0 p-0" readonly>
+                                    <button @click="updateQuantity(item.id, item.quantity + 1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100">+</button>
+                                </div>
+                            </div>
+                            <div class="hidden md:block col-span-2 text-right font-medium">
+                                {{ formatPrice(item.price * item.quantity) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between items-center pt-6 border-t border-gray-200">
+                        <a href="/shop" class="text-sm text-gray-500 hover:text-black underline tracking-wide">
+                            <i class="fa-solid fa-arrow-left-long mr-2"></i> Tiếp tục mua sắm
+                        </a>
+                        <button class="text-sm text-gray-500 hover:text-black uppercase tracking-wide border px-4 py-2 hover:bg-gray-50">
+                            Cập nhật giỏ hàng
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Order Summary -->
+                <div class="w-full lg:w-1/3">
+                    <div class="bg-gray-50 p-8">
+                        <h3 class="font-serif text-xl tracking-wide uppercase mb-6 border-b border-gray-200 pb-4">Tóm tắt đơn hàng</h3>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Tổng tạm tính</span>
+                                <span>{{ formatPrice(cartTotal) }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Giao hàng</span>
+                                <span>Tính khi thanh toán</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Giảm giá</span>
+                                <span>-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between font-medium text-lg pt-4 border-t border-gray-200 mb-8">
+                            <span>Tổng cộng</span>
+                            <span>{{ formatPrice(cartTotal) }}</span>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <p class="text-xs text-gray-500 mb-2 uppercase tracking-wide">Mã khuyến mãi / Gift card</p>
+                            <div class="flex">
+                                <input type="text" placeholder="Nhập mã..." class="w-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black bg-white">
+                                <button class="bg-black text-white px-4 py-2 text-sm uppercase tracking-wider hover:bg-gray-800">Áp dụng</button>
+                            </div>
+                        </div>
+                        
+                        <button @click="proceedCheckout" class="block w-full bg-black text-white text-center py-4 uppercase tracking-widest text-sm font-semibold hover:bg-gray-800 transition-colors cursor-pointer">
+                            Tiến hành thanh toán
+                        </button>
+                        
+                        <div class="mt-6 flex items-center justify-center gap-4 text-gray-400 text-2xl">
+                            <i class="fa-brands fa-cc-visa hover:text-gray-600 transition-colors"></i>
+                            <i class="fa-brands fa-cc-mastercard hover:text-gray-600 transition-colors"></i>
+                            <i class="fa-brands fa-cc-paypal hover:text-gray-600 transition-colors"></i>
+                        </div>
+                    </div>
+
+                    <!-- Checkout Form (shown after clicking proceed) -->
+                    <div v-if="showCheckout" class="bg-gray-50 p-8 mt-6">
+                        <h3 class="font-serif text-xl tracking-wide uppercase mb-6 border-b border-gray-200 pb-4">Thông tin giao hàng</h3>
+                        <form @submit.prevent="placeOrder" class="space-y-4">
+                            <div>
+                                <label class="text-xs text-gray-500 uppercase tracking-wide block mb-1">Họ tên *</label>
+                                <input v-model="orderForm.fullName" type="text" required class="w-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black" placeholder="Nguyễn Văn A">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 uppercase tracking-wide block mb-1">Số điện thoại *</label>
+                                <input v-model="orderForm.phone" type="tel" required class="w-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black" placeholder="0912 345 678">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 uppercase tracking-wide block mb-1">Địa chỉ *</label>
+                                <input v-model="orderForm.address" type="text" required class="w-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black" placeholder="Số nhà, đường...">
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="text-xs text-gray-500 uppercase tracking-wide block mb-1">Phường/Xã</label>
+                                    <input v-model="orderForm.ward" type="text" class="w-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 uppercase tracking-wide block mb-1">Quận/Huyện</label>
+                                    <input v-model="orderForm.district" type="text" class="w-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 uppercase tracking-wide block mb-1">Tỉnh/TP</label>
+                                    <input v-model="orderForm.province" type="text" class="w-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 uppercase tracking-wide block mb-1">Phương thức thanh toán</label>
+                                <select v-model="orderForm.paymentMethod" class="w-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black bg-white">
+                                    <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+                                    <option value="VNPAY">VNPay</option>
+                                    <option value="MOMO">MoMo</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 uppercase tracking-wide block mb-1">Ghi chú</label>
+                                <textarea v-model="orderForm.note" rows="2" class="w-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black" placeholder="Ghi chú đơn hàng..."></textarea>
+                            </div>
+                            <button type="submit" :disabled="checkoutLoading"
+                                    class="w-full bg-black text-white py-4 uppercase tracking-widest text-sm font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span v-if="checkoutLoading" class="inline-flex items-center gap-2">
+                                    <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    Đang xử lý...
+                                </span>
+                                <span v-else>Xác nhận đặt hàng</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<script>
+    if(typeof Vue !== 'undefined') {
+        const cartPageApp = Vue.createApp({
+            data() {
+                return {
+                    cartItems: [],
+                    loading: true,
+                    checkoutLoading: false,
+
+                    // Checkout form
+                    showCheckout: false,
+                    orderForm: {
+                        fullName: '',
+                        phone: '',
+                        address: '',
+                        ward: '',
+                        district: '',
+                        province: '',
+                        paymentMethod: 'COD',
+                        note: '',
+                        couponCode: ''
+                    },
+                    orderSuccess: null
+                }
+            },
+            computed: {
+                cartTotal() {
+                    return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+                }
+            },
+            async mounted() {
+                await this.loadCart();
+            },
+            methods: {
+                formatPrice(price) {
+                    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+                },
+
+                async loadCart() {
+                    if (!window.AuthManager || !window.AuthManager.isAuthenticated()) {
+                        this.loading = false;
+                        return;
+                    }
+                    try {
+                        this.loading = true;
+                        const { data: resp } = await window.LeikaAPI.get('/cart');
+                        const dto = resp.data;
+                        this.cartItems = (dto.items || []).map(i => ({
+                            id: i.cartItemId,
+                            name: i.productName,
+                            variant: i.variantInfo || '',
+                            price: i.unitPrice,
+                            quantity: i.quantity,
+                            image: i.thumbnailUrl || 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80',
+                            stock: i.stockQty
+                        }));
+                    } catch (err) {
+                        console.error('Failed to load cart', err);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async updateQuantity(id, newQty) {
+                    if (newQty < 1) return;
+                    const item = this.cartItems.find(i => i.id === id);
+                    if (!item) return;
+                    const prevQty = item.quantity;
+                    item.quantity = newQty; // optimistic
+                    try {
+                        const { data: resp } = await window.LeikaAPI.put(`/cart/${id}`, null, { params: { quantity: newQty } });
+                        if (!resp.success) {
+                            item.quantity = prevQty;
+                        }
+                        // Sync sidebar cart count
+                        if (window.cartApp) window.cartApp.fetchCart();
+                    } catch {
+                        item.quantity = prevQty;
+                    }
+                },
+
+                async removeItem(id) {
+                    const prev = [...this.cartItems];
+                    this.cartItems = this.cartItems.filter(i => i.id !== id);
+                    try {
+                        await window.LeikaAPI.delete(`/cart/${id}`);
+                        if (window.cartApp) window.cartApp.fetchCart();
+                    } catch {
+                        this.cartItems = prev;
+                    }
+                },
+
+                async proceedCheckout() {
+                    if (!window.AuthManager || !window.AuthManager.isAuthenticated()) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    this.showCheckout = true;
+                },
+
+                async placeOrder() {
+                    this.checkoutLoading = true;
+                    try {
+                        const { data: resp } = await window.LeikaAPI.post('/orders', this.orderForm);
+                        if (resp.success) {
+                            this.orderSuccess = resp.data;
+                            this.cartItems = [];
+                            this.showCheckout = false;
+                            if (window.cartApp) window.cartApp.fetchCart();
+                        } else {
+                            alert(resp.message || 'Đặt hàng thất bại');
+                        }
+                    } catch (err) {
+                        const msg = err.response?.data?.message || 'Không thể đặt hàng. Vui lòng thử lại.';
+                        alert(msg);
+                    } finally {
+                        this.checkoutLoading = false;
+                    }
+                }
+            }
+        });
+        cartPageApp.mount('#cartPageApp');
+    }
+</script>
+
+</div>
+</body>
+</html>

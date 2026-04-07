@@ -1,0 +1,122 @@
+[
+  {
+    "code": "01",
+    "name": "Hà Nội",
+    "districts": [
+      {
+        "code": "001",
+        "name": "Ba Đình",
+        "wards": [
+          { "code": "00001", "name": "Phúc Xá" },
+          { "code": "00004", "name": "Trúc Bạch" },
+          { "code": "00006", "name": "Vĩnh Phúc" }
+        ]
+      },
+      {
+        "code": "007",
+        "name": "Cầu Giấy",
+        "wards": [
+          { "code": "00190", "name": "Dịch Vọng" },
+          { "code": "00193", "name": "Dịch Vọng Hậu" },
+          { "code": "00199", "name": "Nghĩa Đô" }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "79",
+    "name": "TP. Hồ Chí Minh",
+    "districts": [
+      {
+        "code": "760",
+        "name": "Quận 1",
+        "wards": [
+          { "code": "26734", "name": "Bến Nghé" },
+          { "code": "26737", "name": "Bến Thành" },
+          { "code": "26740", "name": "Cô Giang" }
+        ]
+      },
+      {
+        "code": "769",
+        "name": "Thành phố Thủ Đức",
+        "wards": [
+          { "code": "27169", "name": "An Khánh" },
+          { "code": "27172", "name": "An Lợi Đông" },
+          { "code": "27184", "name": "Hiệp Bình Chánh" }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "48",
+    "name": "Đà Nẵng",
+    "districts": [
+      {
+        "code": "490",
+        "name": "Hải Châu",
+        "wards": [
+          { "code": "20194", "name": "Bình Hiên" },
+          { "code": "20200", "name": "Bình Thuận" },
+          { "code": "20203", "name": "Hòa Cường Bắc" }
+        ]
+      },
+      {
+        "code": "491",
+        "name": "Thanh Khê",
+        "wards": [
+          { "code": "20257", "name": "An Khê" },
+          { "code": "20263", "name": "Chính Gián" },
+          { "code": "20272", "name": "Tam Thuận" }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "31",
+    "name": "Hải Phòng",
+    "districts": [
+      {
+        "code": "303",
+        "name": "Hồng Bàng",
+        "wards": [
+          { "code": "11140", "name": "Hạ Lý" },
+          { "code": "11149", "name": "Minh Khai" },
+          { "code": "11158", "name": "Thượng Lý" }
+        ]
+      },
+      {
+        "code": "304",
+        "name": "Ngô Quyền",
+        "wards": [
+          { "code": "11194", "name": "Cầu Đất" },
+          { "code": "11200", "name": "Đằng Giang" },
+          { "code": "11206", "name": "Đông Khê" }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "92",
+    "name": "Cần Thơ",
+    "districts": [
+      {
+        "code": "916",
+        "name": "Ninh Kiều",
+        "wards": [
+          { "code": "31117", "name": "An Bình" },
+          { "code": "31123", "name": "An Cư" },
+          { "code": "31132", "name": "Tân An" }
+        ]
+      },
+      {
+        "code": "917",
+        "name": "Bình Thủy",
+        "wards": [
+          { "code": "31174", "name": "An Thới" },
+          { "code": "31186", "name": "Long Hòa" },
+          { "code": "31189", "name": "Long Tuyền" }
+        ]
+      }
+    ]
+  }
+]

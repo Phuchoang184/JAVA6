@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title != null ? title + ' | LEIKA LUXURY' : 'LEIKA LUXURY - Thời Trang Cao Cấp'}">LEIKA LUXURY</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        luxe: {
+                            black: '#0a0a0a',
+                            white: '#ffffff',
+                            gray: '#f5f5f5',
+                            darkGray: '#333333',
+                            beige: '#f5f5dc',
+                            nude: '#e6dfd9',
+                            gold: '#c9a96e',
+                            champagne: '#f7f3ed'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Vue.js & Axios -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- Custom CSS – Premium Luxury Theme -->
+    <style>
+        /* ── Base ─────────────────────────────────── */
+        body { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        ::selection { background: #0a0a0a; color: #fff; }
+
+        /* ── Image Hover Zoom ────────────────────── */
+        .hover-zoom img { transition: transform 0.8s cubic-bezier(.25,.46,.45,.94); }
+        .hover-zoom:hover img { transform: scale(1.06); }
+
+        /* ── Button Luxe (outline) ───────────────── */
+        .btn-luxe {
+            position: relative;
+            border: 1px solid #000;
+            background: transparent;
+            color: #000;
+            transition: all 0.4s cubic-bezier(.25,.46,.45,.94);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            overflow: hidden;
+        }
+        .btn-luxe::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: #000;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.5s cubic-bezier(.25,.46,.45,.94);
+            z-index: 0;
+        }
+        .btn-luxe:hover::before { transform: scaleX(1); transform-origin: left; }
+        .btn-luxe:hover { color: #fff; }
+        .btn-luxe span, .btn-luxe i { position: relative; z-index: 1; }
+
+        /* ── Button Luxe Dark (filled) ───────────── */
+        .btn-luxe-dark {
+            position: relative;
+            border: 1px solid #000;
+            background: #000;
+            color: #fff;
+            transition: all 0.4s cubic-bezier(.25,.46,.45,.94);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            overflow: hidden;
+        }
+        .btn-luxe-dark::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: #fff;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s cubic-bezier(.25,.46,.45,.94);
+            z-index: 0;
+        }
+        .btn-luxe-dark:hover::before { transform: scaleX(1); transform-origin: right; }
+        .btn-luxe-dark:hover { color: #000; }
+        .btn-luxe-dark span, .btn-luxe-dark i { position: relative; z-index: 1; }
+
+        /* ── Ripple on click ─────────────────────── */
+        .btn-ripple { position: relative; overflow: hidden; }
+        .btn-ripple .ripple-circle {
+            position: absolute; border-radius: 50%;
+            background: rgba(255,255,255,0.35);
+            transform: scale(0); animation: ripple-anim 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }
+
+        /* ── Transparent Header → Solid on Scroll ── */
+        header {
+            transition: background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+            background: transparent;
+        }
+        header.scrolled {
+            background: rgba(255, 255, 255, 0.92) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 1px 20px rgba(0,0,0,0.06);
+        }
+        header { color: #0a0a0a; }
+        header a, header button, header i { color: #0a0a0a; }
+
+        /* ── Scroll Reveal Animations ────────────── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.7s cubic-bezier(.25,.46,.45,.94), transform 0.7s cubic-bezier(.25,.46,.45,.94);
+        }
+        .reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: opacity 0.7s cubic-bezier(.25,.46,.45,.94), transform 0.7s cubic-bezier(.25,.46,.45,.94);
+        }
+        .reveal-left.revealed { opacity: 1; transform: translateX(0); }
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.7s cubic-bezier(.25,.46,.45,.94), transform 0.7s cubic-bezier(.25,.46,.45,.94);
+        }
+        .reveal-right.revealed { opacity: 1; transform: translateX(0); }
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.92);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal-scale.revealed { opacity: 1; transform: scale(1); }
+
+        /* Stagger children */
+        .stagger-children > * { transition-delay: calc(var(--i, 0) * 0.1s); }
+
+        /* ── Hero Animations ─────────────────────── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(.25,.46,.45,.94) forwards;
+            opacity: 0;
+        }
+        @keyframes heroZoom {
+            from { transform: scale(1); }
+            to   { transform: scale(1.08); }
+        }
+        .hero-zoom-anim {
+            animation: heroZoom 20s ease-in-out alternate infinite;
+        }
+
+        /* ── Parallax helper ─────────────────────── */
+        .parallax-img {
+            will-change: transform;
+            transition: transform 0.1s linear;
+        }
+
+        /* ── Product Card Premium ────────────────── */
+        .product-card {
+            position: relative;
+            transition: transform 0.5s cubic-bezier(.25,.46,.45,.94), box-shadow 0.5s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px -15px rgba(0,0,0,0.12);
+        }
+        .product-card .card-img-wrap { position: relative; overflow: hidden; }
+        .product-card .card-img-primary,
+        .product-card .card-img-secondary {
+            transition: opacity 0.6s ease, transform 0.8s cubic-bezier(.25,.46,.45,.94);
+            position: absolute; inset: 0;
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .product-card .card-img-secondary {
+            opacity: 0;
+        }
+        .product-card:hover .card-img-primary { transform: scale(1.06); }
+        .product-card:hover .card-img-secondary { opacity: 1; transform: scale(1.06); }
+        .product-card .quick-view-btn {
+            position: absolute;
+            bottom: -50px;
+            left: 50%; transform: translateX(-50%);
+            transition: bottom 0.4s cubic-bezier(.25,.46,.45,.94), opacity 0.4s ease;
+            opacity: 0;
+            white-space: nowrap;
+        }
+        .product-card:hover .quick-view-btn {
+            bottom: 16px;
+            opacity: 1;
+        }
+
+        /* ── Footer Links ────────────────────────── */
+        .footer-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .footer-link::after {
+            content: '';
+            position: absolute;
+            left: 0; bottom: -2px;
+            width: 0; height: 1px;
+            background: #0a0a0a;
+            transition: width 0.4s cubic-bezier(.25,.46,.45,.94);
+        }
+        .footer-link:hover { color: #0a0a0a; }
+        .footer-link:hover::after { width: 100%; }
+
+        /* ── Social Icon Hover ───────────────────── */
+        .social-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; border: 1px solid #d1d5db; border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .social-icon:hover {
+            background: #0a0a0a; color: #fff; border-color: #0a0a0a;
+            transform: translateY(-3px);
+        }
+
+        /* ── Cart slide / fade ───────────────────── */
+        .cart-slide-enter-active, .cart-slide-leave-active { transition: transform 0.3s ease; }
+        .cart-slide-enter-from, .cart-slide-leave-to { transform: translateX(100%); }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+        /* ── Marquee / Ticker ────────────────────── */
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .marquee-track { animation: marquee 30s linear infinite; display: flex; width: max-content; }
+
+        /* ── Misc ────────────────────────────────── */
+        [v-cloak] { display: none; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+    
+    <!-- Premium Cart Module -->
+    <link rel="stylesheet" th:href="@{/css/cart.css}">
+    
+    <!-- Hero Slider Module (homepage only) -->
+    <link rel="stylesheet" th:href="@{/css/hero.css}">
+</head>
+<body class="bg-luxe-white text-luxe-black font-sans leading-relaxed flex flex-col min-h-screen">
+
+<div class="flex flex-col min-h-screen">
+    <!-- Header Vue App -->
+    <header id="layout-app" v-cloak class="fixed w-full z-50 transition-all duration-300 bg-white" :class="{'scrolled': isScrolled}">
+
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Mobile Menu Button -->
+                <button @click="mobileMenu = !mobileMenu" class="md:hidden text-2xl">
+                    <i :class="mobileMenu ? 'fa-solid fa-xmark' : 'fa-solid fa-bars'"></i>
+                </button>
+                
+                <!-- Logo -->
+                <a href="/" class="text-3xl font-semibold tracking-[0.15em]" style="font-family: Arial, sans-serif;">
+                    LEIKA
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-10">
+                    <a href="/" class="text-xs font-medium hover:opacity-60 transition-opacity duration-300 uppercase tracking-[0.2em]">Trang chủ</a>
+                    <a href="/shop" class="text-xs font-medium hover:opacity-60 transition-opacity duration-300 uppercase tracking-[0.2em]">Sản phẩm</a>
+                    <a href="/collections" class="text-xs font-medium hover:opacity-60 transition-opacity duration-300 uppercase tracking-[0.2em]">Bộ sưu tập</a>
+                    <a href="/sale" class="text-xs font-medium hover:opacity-60 transition-opacity duration-300 uppercase tracking-[0.2em]" style="color: inherit;">Khuyến mãi</a>
+                </nav>
+                
+                <!-- Icons -->
+                <div class="flex items-center space-x-5">
+                    <button class="hover:opacity-60 transition-opacity duration-300">
+                        <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                    </button>
+                    <!-- Auth: Logged in -->
+                    <div v-if="isLoggedIn" class="relative group">
+                        <button class="hover:opacity-60 transition-opacity duration-300 flex items-center gap-1">
+                            <i class="fa-solid fa-user text-lg"></i>
+                            <span class="hidden md:inline text-xs tracking-wide">{{ userName }}</span>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <a href="/profile" class="block px-4 py-3 text-sm text-luxe-black hover:bg-gray-50 transition-colors">
+                                <i class="fa-regular fa-user w-5 text-center mr-2"></i> Tài khoản
+                            </a>
+                            <a href="/orders" class="block px-4 py-3 text-sm text-luxe-black hover:bg-gray-50 transition-colors">
+                                <i class="fa-solid fa-box w-5 text-center mr-2"></i> Đơn hàng
+                            </a>
+                            <button @click="logout" class="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors text-red-600">
+                                <i class="fa-solid fa-right-from-bracket w-5 text-center mr-2"></i> Đăng xuất
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Auth: Not logged in -->
+                    <a v-else href="/login" class="hover:opacity-60 transition-opacity duration-300">
+                        <i class="fa-regular fa-user text-lg"></i>
+                    </a>
+                    <button onclick="window.cartApp && window.cartApp.toggleCart()" class="relative hover:opacity-60 transition-opacity duration-300">
+                        <i class="fa-solid fa-bag-shopping text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu Drawer -->
+        <div v-show="mobileMenu" class="md:hidden bg-white border-t border-gray-100 shadow-lg">
+            <nav class="container mx-auto px-6 py-6 space-y-4">
+                <a href="/" class="block text-sm font-medium uppercase tracking-[0.2em] text-luxe-black hover:opacity-60 transition-opacity">Trang chủ</a>
+                <a href="/shop" class="block text-sm font-medium uppercase tracking-[0.2em] text-luxe-black hover:opacity-60 transition-opacity">Sản phẩm</a>
+                <a href="/collections" class="block text-sm font-medium uppercase tracking-[0.2em] text-luxe-black hover:opacity-60 transition-opacity">Bộ sưu tập</a>
+                <a href="/sale" class="block text-sm font-medium uppercase tracking-[0.2em] text-luxe-black hover:opacity-60 transition-opacity">Khuyến mãi</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Placeholder -->
+    <main class="flex-grow pt-20">
+        <div th:replace="~{:: content}"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-luxe-black text-white pt-20 pb-8 mt-24 relative overflow-hidden">
+        <!-- Decorative line -->
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-luxe-gold to-transparent opacity-40"></div>
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+                <!-- Brand -->
+                <div class="md:col-span-4">
+                    <h3 class="font-serif text-3xl font-semibold mb-6 tracking-[0.15em]">LEIKA</h3>
+                    <p class="text-sm text-gray-400 mb-8 leading-relaxed max-w-xs">
+                        Thương hiệu thời trang cao cấp mang phong cách Minimalism, tôn vinh vẻ đẹp thanh lịch và tinh tế của phụ nữ hiện đại.
+                    </p>
+                    <div class="flex space-x-3">
+                        <a href="#" class="social-icon text-gray-400 border-gray-600"><i class="fa-brands fa-facebook-f text-sm"></i></a>
+                        <a href="#" class="social-icon text-gray-400 border-gray-600"><i class="fa-brands fa-instagram text-sm"></i></a>
+                        <a href="#" class="social-icon text-gray-400 border-gray-600"><i class="fa-brands fa-tiktok text-sm"></i></a>
+                        <a href="#" class="social-icon text-gray-400 border-gray-600"><i class="fa-brands fa-pinterest-p text-sm"></i></a>
+                    </div>
+                </div>
+                <!-- Links -->
+                <div class="md:col-span-2">
+                    <h4 class="font-semibold mb-6 uppercase tracking-[0.2em] text-xs text-luxe-gold">Khám phá</h4>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li><a href="/shop" class="footer-link">Sản phẩm mới</a></li>
+                        <li><a href="/collections" class="footer-link">Bộ sưu tập</a></li>
+                        <li><a href="/shop?category=thoi-trang-nu" class="footer-link">Nữ</a></li>
+                        <li><a href="/sale" class="footer-link">Sale</a></li>
+                    </ul>
+                </div>
+                <div class="md:col-span-2">
+                    <h4 class="font-semibold mb-6 uppercase tracking-[0.2em] text-xs text-luxe-gold">Chính sách</h4>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li><a href="/policy/return" class="footer-link">Đổi trả</a></li>
+                        <li><a href="/policy/privacy" class="footer-link">Bảo mật</a></li>
+                        <li><a href="/policy/terms" class="footer-link">Điều khoản</a></li>
+                        <li><a href="/guide/buying" class="footer-link">Hướng dẫn mua hàng</a></li>
+                    </ul>
+                </div>
+                <div class="md:col-span-4">
+                    <h4 class="font-semibold mb-6 uppercase tracking-[0.2em] text-xs text-luxe-gold">Liên hệ & Nhận tin</h4>
+                    <ul class="space-y-3 text-sm text-gray-400 mb-6">
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-location-dot w-4 text-center"></i> 18 Trần Thái Tông, Cầu Giấy, HN</li>
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-phone w-4 text-center"></i> 1900 1234</li>
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-envelope w-4 text-center"></i> contact@leika.vn</li>
+                    </ul>
+                    <p class="text-sm text-gray-400 mb-3">Nhận ưu đãi đặc quyền & bộ sưu tập mới</p>
+                    <form class="flex border border-gray-700 overflow-hidden group focus-within:border-luxe-gold transition-colors duration-300">
+                        <input type="email" placeholder="Email của bạn" class="bg-transparent px-4 py-3 text-sm text-white w-full focus:outline-none placeholder:text-gray-500">
+                        <button type="submit" class="bg-white text-black px-6 py-3 text-xs uppercase tracking-[0.15em] font-medium hover:bg-luxe-gold hover:text-white transition-colors duration-300 whitespace-nowrap">Đăng ký</button>
+                    </form>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-gray-500 tracking-wider">&copy; 2026 LEIKA LUXURY. Đã đăng ký bản quyền.</p>
+                <p class="text-xs text-gray-600 tracking-[0.15em] uppercase font-serif italic">Sống Phong Cách.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart has been extracted to standalone cart module -->
+    
+</div> <!-- /flex flex-col -->
+
+<!-- Standalone Cart App -->
+<div id="cart-app"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     AI CHATBOX — LEIKA Fashion Assistant
+     Premium floating chatbox, bottom-right corner
+     ══════════════════════════════════════════════════════════ -->
+<link rel="stylesheet" th:href="@{/css/chat.css}">
+
+<!-- Toggle button (outside Vue scope for easy CSS targeting) -->
+<button id="chat-toggle" type="button" aria-label="Mở trợ lý thời trang LEIKA"
+        onclick="window.leikaChat && window.leikaChat.toggle()">
+    <i class="fa-solid fa-comment-dots chat-icon"></i>
+    <i class="fa-solid fa-xmark close-icon"></i>
+    <span id="chat-badge" class="hidden">1</span>
+</button>
+
+<!-- Chat window (Vue-controlled) -->
+<div id="leika-chat-app">
+    <!-- Chat Window Panel -->
+    <div id="chat-window" :class="{ 'chat-hidden': !isOpen }">
+
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="chat-header-avatar">💎</div>
+            <div class="chat-header-info">
+                <div class="chat-header-name">LEIKA Assistant</div>
+                <div class="chat-header-status">
+                    <span class="chat-status-dot"></span>
+                    <span v-if="isTyping">Đang soạn tin...</span>
+                    <span v-else>Trực tuyến 24/7</span>
+                </div>
+            </div>
+            <div class="chat-header-actions">
+                <button class="chat-header-btn" @click="toggleSound"
+                        :title="soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'">
+                    <i :class="soundEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark'"></i>
+                </button>
+                <button class="chat-header-btn" @click="clearHistory" title="Xóa lịch sử">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <button class="chat-header-btn" @click="toggle" title="Đóng">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Promo strip -->
+        <div class="chat-promo">
+            ✦ &nbsp;Miễn phí giao hàng đơn từ 500.000đ &nbsp;·&nbsp; Đổi trả 30 ngày &nbsp;·&nbsp; Hỗ trợ VNPAY / COD&nbsp; ✦
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" ref="msgList">
+
+            <!-- Welcome screen (no messages yet) -->
+            <div v-if="!hasMessages" class="chat-welcome">
+                <div class="chat-welcome-icon">💎</div>
+                <div class="chat-welcome-title">Xin chào!</div>
+                <div class="chat-welcome-sub">
+                    Tôi là trợ lý thời trang LEIKA LUXURY. Hãy để tôi giúp bạn tìm trang phục hoàn hảo ✨
+                </div>
+            </div>
+
+            <!-- Message list -->
+            <template v-for="msg in messages" :key="msg.id">
+                <div class="chat-msg" :class="msg.isUser ? 'is-user' : 'is-bot'">
+                    <!-- Bot avatar -->
+                    <div v-if="!msg.isUser" class="msg-avatar">💎</div>
+
+                    <div class="msg-body">
+                        <!-- Text bubble -->
+                        <div class="msg-bubble">{{ msg.text }}</div>
+
+                        <!-- Inline product cards -->
+                        <div v-if="msg.products && msg.products.length" class="chat-products">
+                            <a v-for="p in msg.products" :key="p.productId"
+                               :href="'/products/' + p.slug"
+                               class="chat-product-card"
+                               @click="trackBehavior(p.productId, 'VIEW')"
+                               target="_self">
+                                <div style="overflow:hidden;">
+                                    <img :src="p.thumbnailUrl || '/images/placeholder.jpg'"
+                                         :alt="p.productName"
+                                         class="chat-product-img"
+                                         loading="lazy"
+                                         onerror="this.src='/images/placeholder.jpg'">
+                                </div>
+                                <div class="chat-product-info">
+                                    <div class="chat-product-name">{{ p.productName }}</div>
+                                    <div class="chat-product-price">
+                                        <template v-if="p.salePrice">
+                                            <span class="chat-price-sale">{{ formatPrice(p.salePrice) }}</span>
+                                            <span class="chat-price-orig">{{ formatPrice(p.basePrice) }}</span>
+                                            <span v-if="p.discountPercent > 0" class="chat-product-badge">-{{ p.discountPercent }}%</span>
+                                        </template>
+                                        <template v-else>
+                                            <span class="chat-price-only">{{ formatPrice(p.basePrice) }}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Per-message suggestion chips -->
+                        <div v-if="!msg.isUser && msg.chips && msg.chips.length" class="chat-chips">
+                            <button v-for="chip in msg.chips" :key="chip.text"
+                                    class="chat-chip" @click="onChip(chip)">
+                                <span>{{ chip.icon }}</span>
+                                <span>{{ chip.text }}</span>
+                            </button>
+                        </div>
+
+                        <div class="msg-time">{{ msg.time }}</div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Typing indicator -->
+            <div v-if="isTyping" class="chat-typing">
+                <div class="msg-avatar">💎</div>
+                <div class="typing-bubble">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick-reply chips (global) -->
+        <div v-if="!isTyping" style="padding: 6px 16px 0; border-top: 1px solid #e0ddd8; background: #fff;">
+            <div class="chat-chips" style="overflow-x: auto; flex-wrap: nowrap; padding-bottom: 6px;">
+                <button v-for="chip in chips" :key="chip.text"
+                        class="chat-chip" @click="onChip(chip)">
+                    <span>{{ chip.icon }}</span>
+                    <span>{{ chip.text }}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Input area -->
+        <div class="chat-input-area">
+            <div class="chat-input-row">
+                <textarea
+                    ref="chatInput"
+                    class="chat-input"
+                    v-model="inputText"
+                    @keydown="onKeydown"
+                    @input="onInput"
+                    placeholder="Nhắn tin với LEIKA..."
+                    rows="1"
+                    maxlength="500"
+                ></textarea>
+                <button class="chat-send-btn"
+                        :disabled="sendDisabled"
+                        @click="sendMessage()">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="chat-footer-note">
+                LEIKA AI &nbsp;·&nbsp; Powered by GPT &nbsp;·&nbsp; Enter để gửi
+            </div>
+        </div>
+
+    </div><!-- /#chat-window -->
+</div><!-- /#leika-chat-app -->
+<!-- ══ End AI Chatbox ══ -->
+
+<!-- Load API Setup (JWT Interceptor) FIRST — before Vue mounts -->
+<script th:src="@{/js/api.js}"></script>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                isScrolled: false,
+                isLoggedIn: false,
+                userName: '',
+                mobileMenu: false,
+                isHomePage: window.location.pathname === '/'
+            }
+        },
+        mounted() {
+            window.addEventListener('scroll', this.handleScroll);
+            this.handleScroll();
+            this.checkAuth();
+            window.addEventListener('auth:changed', this.checkAuth);
+            // Init scroll-reveal observer
+            this.initRevealObserver();
+            // Init parallax
+            if (this.isHomePage) { this.initParallax(); }
+            // Ripple on buttons
+            this.initRipple();
+        },
+        unmounted() {
+            window.removeEventListener('scroll', this.handleScroll);
+            window.removeEventListener('auth:changed', this.checkAuth);
+        },
+        methods: {
+            handleScroll() {
+                this.isScrolled = window.scrollY > 50;
+            },
+            checkAuth() {
+                if (window.AuthManager) {
+                    this.isLoggedIn = window.AuthManager.isAuthenticated();
+                    const user = window.AuthManager.getUser();
+                    this.userName = user ? user.fullName : '';
+                }
+            },
+            logout() {
+                if (window.AuthManager) {
+                    window.AuthManager.logout();
+                    window.location.href = '/';
+                }
+            },
+            /* Scroll-reveal IntersectionObserver */
+            initRevealObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('revealed');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+                document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => observer.observe(el));
+                // Re-observe after Vue finishes rendering child pages
+                setTimeout(() => {
+                    document.querySelectorAll('.reveal:not(.revealed), .reveal-left:not(.revealed), .reveal-right:not(.revealed), .reveal-scale:not(.revealed)').forEach(el => observer.observe(el));
+                }, 300);
+            },
+            /* Parallax on hero images */
+            initParallax() {
+                window.addEventListener('scroll', () => {
+                    const scrolled = window.scrollY;
+                    document.querySelectorAll('.parallax-img').forEach(el => {
+                        const speed = parseFloat(el.dataset.speed || 0.3);
+                        el.style.transform = 'translateY(' + (scrolled * speed) + 'px) scale(1.08)';
+                    });
+                }, { passive: true });
+            },
+            /* Button ripple effect */
+            initRipple() {
+                document.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.btn-ripple');
+                    if (!btn) return;
+                    const circle = document.createElement('span');
+                    circle.classList.add('ripple-circle');
+                    const rect = btn.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    circle.style.width = circle.style.height = size + 'px';
+                    circle.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                    circle.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                    btn.appendChild(circle);
+                    setTimeout(() => circle.remove(), 700);
+                });
+            }
+        }
+    });
+    app.mount('#layout-app');
+</script>
+
+<!-- Load Cart Module JS -->
+<script th:src="@{/js/cart.js}"></script>
+
+<!-- Hero Slider JS (only runs if .hero exists on page) -->
+<script th:src="@{/js/hero.js}"></script>
+
+<!-- Page-specific Auth apps (self-check for mount element) -->
+<script th:src="@{/js/login.js}"></script>
+<script th:src="@{/js/register.js}"></script>
+
+<!-- AI Chatbox (loaded last so api.js / Vue are already available) -->
+<script th:src="@{/js/chat.js}"></script>
+</body>
+</html>
